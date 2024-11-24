@@ -1,0 +1,40 @@
+# .super-linter.yml
+
+# Enable all linters by default (set to false if you want to enable specific ones manually)
+run_all_linters: true
+
+# Exclude directories or files from linting
+file_exclusions:
+  - "**/node_modules/**" # Exclude Node.js dependencies
+  - "**/venv/**" # Exclude Python virtual environment
+  - "**/.next/**" # Exclude Next.js build files
+  - "**/dist/**" # Exclude build artifacts
+  - "**/coverage/**" # Exclude coverage reports
+
+# Enable specific languages to be linted
+languages:
+  javascript:
+    enabled: true # Enable JavaScript linting
+  typescript:
+    enabled: true # Enable TypeScript linting
+  python:
+    enabled: true # Enable Python linting
+  css:
+    enabled: true # Enable CSS linting
+  markdown:
+    enabled: true # Enable Markdown file linting
+  json:
+    enabled: true # Enable JSON file linting
+  yaml:
+    enabled: true # Enable YAML file linting
+  html:
+    enabled: true # Enable HTML file linting
+
+# Configuration options for specific linters
+linter_rules:
+  eslint:
+    config_file: "./.eslintrc.json" # Use custom ESLint config
+  pylint:
+    rcfile: "./pylintrc" # Use custom pylint config (if needed)
+  stylelint:
+    config_file: "./.stylelintrc" # Use custom Stylelint config
