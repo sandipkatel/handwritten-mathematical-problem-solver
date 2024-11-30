@@ -48,4 +48,6 @@ The server side uses Flask API and requires following to be initialized
 - Install Flask
     ```pip install Flask```
 - Exit from virtual environment
-    ```deactivate```
+    ```deactivate``` 
+- Run the server
+    ```python server.py```

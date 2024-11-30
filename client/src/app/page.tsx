@@ -1,10 +1,19 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from "react";
 
 export default function Home() {
+  const [message, setMessage] = useState("Loading...");
+
+  useEffect(() => {
+    fetch("http://localhost:8080/")
+      .then((response) => response.json())
+      .then((data) => setMessage(data.people[0] + ": " + data.message));
+  }, []);
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        This is main
+        {message}
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         Footer
