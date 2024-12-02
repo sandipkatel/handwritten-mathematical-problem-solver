@@ -21,13 +21,6 @@
   justify-content: space-around;
   align-items: center;
   gap: 12px;
-  font-family: cursive, Lucida Handwriting, Brush Script MT, Brush Script Std;
-  font-variant: normal;
-}
-
-.brand {
-  font-family: Lucida Handwriting, Brush Script MT, Brush Script Std, cursive;
-  font-variant: normal;
 }
 
 /*Background color toggle button*/
@@ -71,15 +64,11 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 420px) {
-    .logoContainer {
-        gap: 0px;
-    }
-
-  .brandModel {
-    display: none;
+  .logoContainer {
+    gap: 0px;
   }
+  
   .navbarContainer {
     height: 40px;
   }
-
 }

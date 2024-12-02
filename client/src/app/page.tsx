@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/app/page.module.css";
 import NavBar from "@/components/navbar";
 import Hero from "@/components/hero";
+import Footer from "@/components/footer";
 
 export default function Home() {
   const [message, setMessage] = useState("Loading...");
@@ -14,9 +15,9 @@ export default function Home() {
       .then((data) => setMessage(data.people[0] + ": " + data.message));
   }, []);
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <header data-bs-theme="dark">
-        <NavBar />{" "}
+    <div>
+      <header>
+        <NavBar />
       </header>
       <main className={styles.mainWrapper}>
         <Hero />
@@ -26,7 +27,7 @@ export default function Home() {
           <div className={styles.problem}>1 + 2(3 * (4 / 5))</div>
         </div>
         <div className={styles.solutionContainer}>
-        <hr style={{width: "100%"}} />
+          <hr style={{ width: "100%" }} />
           <h5>Solution Generated:</h5>
           <div className={styles.solution}>
             &nbsp;&nbsp;1 + 2(3 * (4 / 5))
@@ -38,7 +39,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        Footer
+        <Footer />
       </footer>
     </div>
   );

@@ -9,7 +9,7 @@ export default function Home() {
         {/* <h2>Our Solution</h2> */}
       </div>
       <div className={styles.inputContainer}>
-        <span>Upload Image of Your Handwritten Problem Below:</span>
+        <span>Upload Your Problem</span>
         <label
           htmlFor="images"
           className={styles.dropContainer}

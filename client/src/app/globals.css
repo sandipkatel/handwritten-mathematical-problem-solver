@@ -10,6 +10,7 @@
 
 html {
   overflow: hidden scroll;
+  scroll-behavior: smooth !important;
 }
 
 body {
@@ -22,10 +23,19 @@ h1,
 h2,
 h3,
 h4,
-h5,
-h6 {
+h5{
   color: var(--foreground-head);
-  font-variant: small-caps;
+  /* font-variant: small-caps; */
+}
+
+.link {
+  text-decoration-line: none;
+  text-decoration-thickness: 0;
+  color: var(--foreground);
+}
+
+.link:hover h6 {
+  opacity: 0.6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +70,17 @@ body[data-theme="light"] {
   --background-main: #f5f5f5;
 }
 
+.brand {
+  font-family: Brush Script MT, Lucida Handwriting, Brush Script MT,
+    Brush Script Std, cursive;
+  font-variant: normal;
+}
+
+.brandModel {
+  font-family: Lucida Handwriting, Brush Script MT, Brush Script Std;
+  font-variant: normal;
+}
+
 @media (max-width: 420px) {
   h1,
   h2,
@@ -68,5 +89,9 @@ body[data-theme="light"] {
   h5,
   h6 {
     transform: scale(0.8);
+  }
+
+  .brandModel {
+    display: none;
   }
 }

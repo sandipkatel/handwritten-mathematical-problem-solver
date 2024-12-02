@@ -33,7 +33,7 @@ export default function NavBar() {
   return (
     <div className={styles.navbarContainer}>
       <nav>
-        <Link href="/" style={{textDecorationLine: "none"}}>
+        <Link href="/" className="link">
           <div className={styles.logoContainer}>
             <Image
               src="/favicon.ico"
@@ -41,7 +41,7 @@ export default function NavBar() {
               width={32}
               height={32}
             />
-            <h2><span className={styles.brand}>Infinity</span> <span className={styles.brandModel}>Math Problem Solver</span></h2>
+            <h2><span className="brand">Infinity</span> <span className="brandModel">Math Problem Solver</span></h2>
           </div>
         </Link>
       </nav>
