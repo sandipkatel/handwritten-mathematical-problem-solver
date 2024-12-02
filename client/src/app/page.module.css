@@ -1,0 +1,24 @@
+.mainWrapper {
+  display: flex;
+  flex-direction: column;
+  background: var(--background-main);
+  box-shadow: 0 0 10px -4px var(--foreground);
+  border-radius: 10px;
+  gap: 20px;
+  width: 90%;
+  margin: 10px auto;
+  padding: 5px 20px;
+}
+
+.solution, .problem{
+  text-align: left;
+  height: fit-content;
+  background-color: var(--background-muted);
+  border: 1px solid var(--foreground-muted);
+  border-radius: 5px;
+  box-shadow: inset 0 0 5px -2px var(--foreground);
+  margin: -15px auto 5px auto;
+  padding: 10px;
+  overflow-x: scroll;
+  scrollbar-width: none;
+}

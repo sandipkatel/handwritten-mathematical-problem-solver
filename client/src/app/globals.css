@@ -4,31 +4,18 @@
 
 :root {
   --foreground-head: #009edd;
-  --foreground: #383b3d;
-  --background: #c3c4c4;
-  --background-main: #f5f5f5;
+  --foreground-head-dark: #08749f;
+  --foreground-muted: #707172;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #c3c4c4;
-    --background: #383b3d;
-    --background-main: #222425;
-  }
+html {
+  overflow: hidden scroll;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-}
-
-main {
-  background: var(--background-main);
-  padding: 1rem;
-  margin: 4rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px -4px var(--foreground);
 }
 
 h1,
@@ -38,4 +25,48 @@ h4,
 h5,
 h6 {
   color: var(--foreground-head);
+  font-variant: small-caps;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground: #f5f5f5;
+    --background: #383b3d;
+    --background-muted: #2a2c2e;
+    --background-main: #222425;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --foreground: #222425;
+    --background: #c3c4c4;
+    --background-muted: #e3e3e3;
+    --background-main: #f5f5f5;
+  }
+}
+
+body[data-theme="dark"] {
+  --foreground: #f5f5f5;
+  --background: #383b3d;
+  --background-muted: #2a2c2e;
+  --background-main: #222425;
+}
+
+body[data-theme="light"] {
+  --foreground: #222425;
+  --background: #c3c4c4;
+  --background-muted: #e3e3e3;
+  --background-main: #f5f5f5;
+}
+
+@media (max-width: 420px) {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    transform: scale(0.8);
+  }
 }

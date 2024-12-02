@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import styles from "@/app/page.module.css";
@@ -15,11 +15,27 @@ export default function Home() {
   }, []);
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <header className="row-start-1 flex gap-6 items-center justify-center">
-        <NavBar /></header>
+      <header data-bs-theme="dark">
+        <NavBar />{" "}
+      </header>
       <main className={styles.mainWrapper}>
         <Hero />
-        {message}
+        {/* {messagnone;*/}
+        <div className={styles.problemContainer}>
+          <h5>Question Read:</h5>
+          <div className={styles.problem}>1 + 2(3 * (4 / 5))</div>
+        </div>
+        <div className={styles.solutionContainer}>
+        <hr style={{width: "100%"}} />
+          <h5>Solution Generated:</h5>
+          <div className={styles.solution}>
+            &nbsp;&nbsp;1 + 2(3 * (4 / 5))
+            <br />= 1 + 2(3 * 0.8)
+            <br />= 1 + 2(2.4)
+            <br />= 1 + 4.8
+            <br />= 5.8
+          </div>
+        </div>
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         Footer
