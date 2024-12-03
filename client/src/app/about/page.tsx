@@ -47,7 +47,7 @@ export default function About() {
               <div className={styles.personInfo}>
                 <h4>{person.name}</h4>
                 <p>
-                  <strong>{person.position}</strong>
+                  <h5>{person.position}</h5>
                 </p>
                 <p className={styles.workInfo}>{person.name} {person.workInfo}</p>
               </div>
