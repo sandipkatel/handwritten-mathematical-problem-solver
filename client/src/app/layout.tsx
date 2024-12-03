@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Head from "next/head";
 import localFont from "next/font/local";
 import "./globals.css";
+import NavBar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Infinity Math Solution",
-  description: "Handwritten mathematical problem solver by infinity group as minor project of Computer Engineering.",
+  description:
+    "Handwritten mathematical problem solver by infinity group as minor project of Computer Engineering.",
 };
 
 export default function RootLayout({
@@ -18,10 +21,14 @@ export default function RootLayout({
       <head>
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body
-        className="antialiased"
-      >
-        {children}
+      <body className="antialiased">
+        <header>
+          <NavBar />
+        </header>
+        <main>{children}</main>
+        <footer>
+          <Footer />
+        </footer>
       </body>
     </html>
   );

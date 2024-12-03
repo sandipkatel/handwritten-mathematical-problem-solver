@@ -37,6 +37,10 @@
   color: var(--foreground-head);
 }
 
+.inputContainerMobile {
+  display: none;
+}
+
 .dropContainer {
   position: relative;
   display: flex;
@@ -103,6 +107,11 @@
   }
 
   .dropContainer {
-    height: 100px;
+    display: none;
+  }
+
+  .inputContainerMobile {
+    display: block;
+    margin: 10px auto;
   }
 }

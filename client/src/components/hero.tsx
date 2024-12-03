@@ -20,6 +20,9 @@ export default function Home() {
           <input type="file" id="images" accept="image/*" className={styles.inputButton} required />
         </label>
       </div>
+      <div className={styles.inputContainerMobile}>
+          <input type="file" id="images" accept="image/*" className={styles.inputButton} required />
+      </div>
     </div>
   );
 }

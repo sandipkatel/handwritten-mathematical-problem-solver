@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "@/app/page.module.css";
-import NavBar from "@/components/navbar";
 import Hero from "@/components/hero";
-import Footer from "@/components/footer";
 
 export default function Home() {
   const [message, setMessage] = useState("Loading...");
@@ -16,10 +14,6 @@ export default function Home() {
   }, []);
   return (
     <div>
-      <header>
-        <NavBar />
-      </header>
-      <main className={styles.mainWrapper}>
         <Hero />
         {/* {messagnone;*/}
         <div className={styles.problemContainer}>
@@ -37,10 +31,6 @@ export default function Home() {
             <br />= 5.8
           </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <Footer />
-      </footer>
     </div>
   );
 }

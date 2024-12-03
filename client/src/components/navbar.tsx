@@ -38,6 +38,7 @@ export default function NavBar() {
             <Image
               src="/favicon.ico"
               alt="infinity logo"
+              className="logo"
               width={32}
               height={32}
             />

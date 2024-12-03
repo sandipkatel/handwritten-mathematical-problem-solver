@@ -22,10 +22,22 @@ body {
 h1,
 h2,
 h3,
-h4,
-h5{
+h4 {
   color: var(--foreground-head);
+  margin: 5px auto;
   /* font-variant: small-caps; */
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  background: var(--background-main);
+  /* box-shadow: 0 0 10px -4px var(--foreground); */
+  border-radius: 10px;
+  gap: 20px;
+  width: 90%;
+  margin: 10px auto;
+  padding: 1rem 20px;
 }
 
 .link {
@@ -34,8 +46,8 @@ h5{
   color: var(--foreground);
 }
 
-.link:hover h6 {
-  opacity: 0.6;
+.logo {
+  margin-top: 5px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -85,9 +97,7 @@ body[data-theme="light"] {
   h1,
   h2,
   h3,
-  h4,
-  h5,
-  h6 {
+  h4 {
     transform: scale(0.8);
   }
 

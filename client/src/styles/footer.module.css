@@ -6,6 +6,7 @@
   border-radius: 8px;
   text-align: center;
 }
+
 .footerUpper {
   display: flex;
   flex-direction: row;
@@ -36,7 +37,14 @@
   color: var(--foreground);
   text-align: left !important;
 } */
+.link {
+  transform: opacity 0.2s ease;
+}
+
+.link:hover {
+  opacity: 0.6;
+}
 
 .footerLower {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }

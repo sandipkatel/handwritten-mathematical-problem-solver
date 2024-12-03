@@ -11,6 +11,7 @@ export default function Footer() {
             <Image
               src="/favicon.ico"
               alt="infinity logo"
+              className="logo"
               width={32}
               height={32}
             />
@@ -20,18 +21,19 @@ export default function Footer() {
           </div>
         </Link>
         <div className={styles.footerNav}>
-        <Link href="/about" className="link">
-          <h6>About Us</h6>
-        </Link>
-        <Link href="/" className="link">
-          <h6>Other</h6>
-        </Link>
+          <Link href="/about" className={`link ${styles.link}`}>
+            <h6>About Us</h6>
+          </Link>
+          <Link href="/" className={`link ${styles.link}`}>
+            <h6>Other</h6>
+          </Link>
         </div>
       </div>
-        {/* <span className={styles.contact}>
+      {/* <span className={styles.contact}>
             info@infinity.com
         </span> */}
       <div className={styles.footerLower}>
+        <hr />
         <em>&copy; 2024 Infinity. All rights reserved.</em>
       </div>
     </div>

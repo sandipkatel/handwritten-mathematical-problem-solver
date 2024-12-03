@@ -51,3 +51,8 @@ The server side uses Flask API and requires following to be initialized
     ```deactivate``` 
 - Run the server
     ```python server.py```
+
+
+### Note: If LF to URLF conversion warning occurs
+Type the command below:
+    ```unix2dos filename```
