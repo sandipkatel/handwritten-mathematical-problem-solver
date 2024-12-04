@@ -1,13 +1,13 @@
 import { info, shortDetail } from "@/types";
 
-function shuffleArray(array: Array<{}>) {
+function shuffleArray<T>(array: Array<T>) {
   for (let i = array.length - 1; i >= 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
 
-let shortPersonalDetail: shortDetail[] = [
+const shortPersonalDetail: shortDetail[] = [
   {
     name: "Sandip Katel",
     age: 23, 

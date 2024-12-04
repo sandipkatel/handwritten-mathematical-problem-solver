@@ -49,7 +49,7 @@ export default function About() {
                 <p>
                   <h5>{person.position}</h5>
                 </p>
-                <p className={styles.workInfo}>{person.name} {person.workInfo}</p>
+                <p className={styles.workInfo}>{person.name.split(" ")[0]} {person.workInfo}</p>
               </div>
             </div>
           ))}
@@ -59,8 +59,8 @@ export default function About() {
           <hr/>
           <p>
             Infinity is more than a technology company; we are a collective of
-            passionate innovators committed to pushing the boundaries of what's
-            possible. Our focus extends beyond mere technological development –
+            passionate innovators committed to pushing the boundaries of what&apos;s
+            possible. Our focus extends beyond mere technological development &hyphen;
             we aim to create AI solutions that are ethical, inclusive, and
             genuinely transformative.
           </p>

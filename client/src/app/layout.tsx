@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Head from "next/head";
-import localFont from "next/font/local";
+// import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -18,9 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
+      <Head>
         <meta name="color-scheme" content="light dark" />
-      </head>
+      </Head>
       <body className="antialiased">
         <header>
           <NavBar />
