@@ -31,7 +31,7 @@ export default function Home() {
 
         {/*DnD*/}
         <div className={styles.inputContainer}>
-          <span>Upload Your Problem</span>
+          <h3>Upload Your Problem</h3>
           <FileUploader
             handleChange={handleChange}
             name="file"
@@ -40,8 +40,10 @@ export default function Home() {
             maxSize={2}
             uploadedLabel="Uploaded Successfully! "
           />
+          </div>
 
           <div className={styles.inputContainerMobile}>
+          <h3>Select Your Problem</h3>
             <input
               type="file"
               id="images"
@@ -52,7 +54,6 @@ export default function Home() {
             />
           </div>
           {file && <p>Uploaded: {file.name}</p>}
-        </div>
       </div>
 
       {file && (

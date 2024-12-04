@@ -8,7 +8,7 @@
 }
 
 .heroImage {
-  background-image: url(/media/mathWorld.png);
+  background-image: url(/media/imageToText.png);
   background-size: cover;
   background-position: center;
   background-clip: border-box;
@@ -22,7 +22,7 @@
 .inputContainer {
   width: 70%;
   min-width: 400px;
-  margin: 0 auto;
+  margin: 24px auto;
 }
 
 .inputContainer > span {
@@ -91,13 +91,14 @@
     gap: 0;
   }
 
-  .inputContainer > *:nth-child(2) {
+  .inputContainer {
     display: none;
   }
 
   .inputContainerMobile {
     display: block;
     margin: 10px auto;
+    width: 300px;
   }
 }
 

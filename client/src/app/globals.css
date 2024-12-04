@@ -94,13 +94,6 @@ body[data-theme="light"] {
 }
 
 @media (max-width: 420px) {
-  h1,
-  h2,
-  h3,
-  h4 {
-    transform: scale(0.8);
-  }
-
   .brandModel {
     display: none;
   }

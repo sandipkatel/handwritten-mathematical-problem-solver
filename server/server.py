@@ -5,7 +5,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# /api/home
+# /
 @app.route("/", methods=["GET", "POST"])
 def return_home():
     return jsonify({
