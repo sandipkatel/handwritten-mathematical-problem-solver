@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import styles from "@/app/page.module.css";
+import Image from "next/image";
 
 export default function Home() {
   // const [message, setMessage] = useState("Loading...");
@@ -32,18 +33,25 @@ export default function Home() {
         {/*DnD*/}
         <div className={styles.inputContainer}>
           <h3>Upload Your Problem</h3>
-          <FileUploader
-            handleChange={handleChange}
-            name="file"
-            types={fileTypes}
-            multiple={false}
-            maxSize={2}
-            uploadedLabel="Uploaded Successfully! "
-          />
-          </div>
+          {file ? (
+            <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
+          ) : (
+            <FileUploader
+              handleChange={handleChange}
+              name="file"
+              types={fileTypes}
+              multiple={false}
+              maxSize={2}
+              uploadedLabel="Uploaded Successfully! "
+            />
+          )}
+        </div>
 
-          <div className={styles.inputContainerMobile}>
+        <div className={styles.inputContainerMobile}>
           <h3>Select Your Problem</h3>
+          {file ? (
+            <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
+          ) : (
             <input
               type="file"
               id="images"
@@ -52,8 +60,8 @@ export default function Home() {
               className={styles.inputButton}
               required
             />
-          </div>
-          {file && <p>Uploaded: {file.name}</p>}
+          )}
+        </div>
       </div>
 
       {file && (
