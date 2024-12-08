@@ -25,14 +25,12 @@ h3,
 h4 {
   color: var(--foreground-head);
   margin: 5px auto;
-  /* font-variant: small-caps; */
 }
 
 main {
   display: flex;
   flex-direction: column;
   background: var(--background-main);
-  /* box-shadow: 0 0 10px -4px var(--foreground); */
   border-radius: 10px;
   gap: 20px;
   width: 90%;
@@ -83,18 +81,17 @@ body[data-theme="light"] {
 }
 
 .brand {
-  font-family: Brush Script MT, Lucida Handwriting, Brush Script MT,
-    Brush Script Std, cursive;
+  font-family: Brush Script MT, Lucida Handwriting, Brush Script Std, cursive;
   font-variant: normal;
 }
 
-.brandModel {
+.brand_model {
   font-family: Lucida Handwriting, Brush Script MT, Brush Script Std;
   font-variant: normal;
 }
 
 @media (max-width: 420px) {
-  .brandModel {
+  .brand_model {
     display: none;
   }
 }

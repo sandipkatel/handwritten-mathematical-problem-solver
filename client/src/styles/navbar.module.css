@@ -1,4 +1,4 @@
-.navbarContainer {
+.navbar_container {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -15,7 +15,7 @@
 }
 
 .navbbarContainer nav,
-.logoContainer {
+.logo_container {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -23,7 +23,7 @@
   gap: 12px;
 }
 
-/*Background color toggle button*/
+/* Background color toggle button */
 .switch {
   position: relative;
   display: inline-block;
@@ -47,7 +47,7 @@
   border-radius: 20px;
 }
 
-.slider:before {
+.slider::before {
   position: absolute;
   content: "";
   height: 16px;
@@ -59,16 +59,16 @@
   border-radius: 50%;
 }
 
-input:checked + .slider:before {
+input:checked + .slider::before {
   transform: translateX(19px);
 }
 
 @media (max-width: 420px) {
-  .logoContainer {
-    gap: 0px;
+  .logo_container {
+    gap: 0;
   }
-  
-  .navbarContainer {
+
+  .navbar_container {
     height: 40px;
   }
 }

@@ -32,24 +32,24 @@ export default function About() {
           across various sectors.
         </p>
       </div>
-      <div className={`${styles.teamWrapper} ${styles.content}`}>
+      <div className={`${styles.team_wrapper} ${styles.content}`}>
         <h2 className="gradient-text">Meet the Team</h2>
-        <div className={styles.teamContainer}>
+        <div className={styles.team_container}>
           {PersonalDetail.map((person, index) => (
-            <div className={styles.personContainer} key={index}>
+            <div className={styles.person_container} key={index}>
               <Image
                 src={person.imgUrl}
                 alt={person.name}
-                className={styles.personImg}
+                className={styles.person_img}
                 width={200}
                 height={200}
               />
-              <div className={styles.personInfo}>
+              <div className={styles.person_info}>
                 <h4>{person.name}</h4>
                 <p>
                   <h5>{person.position}</h5>
                 </p>
-                <p className={styles.workInfo}>{person.name.split(" ")[0]} {person.workInfo}</p>
+                <p className={styles.work_info}>{person.name.split(" ")[0]} {person.workInfo}</p>
               </div>
             </div>
           ))}

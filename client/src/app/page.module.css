@@ -1,4 +1,4 @@
-.heroWrapper {
+.hero_wrapper {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -7,8 +7,8 @@
   width: 100%;
 }
 
-.heroImage {
-  background-image: url(/media/imageToText.png);
+.hero_image {
+  background-image: url("/media/imageToText.png");
   background-size: cover;
   background-position: center;
   background-clip: border-box;
@@ -19,24 +19,24 @@
   border-radius: 15px;
 }
 
-.inputContainer {
+.input_container {
   width: 70%;
   min-width: 400px;
   margin: 24px auto;
 }
 
-.inputContainer > span {
+.input_container > span {
   font-weight: 600;
   font-size: 20px;
   color: var(--foreground-head);
   text-align: center;
 }
 
-.inputContainer > *:nth-child(2) {
+.input_container > *:nth-child(2) {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  padding: 100px 0 0 0;
+  padding: 100px 0 0;
   height: 200px !important;
   max-width: 100% !important;
   border-radius: 10px;
@@ -47,20 +47,20 @@
   margin-top: 5px;
 }
 
-.inputContainer > *:nth-child(2):hover {
+.input_container > *:nth-child(2):hover {
   background: var(--background-muted);
   border-color: var(--foreground-muted);
 }
 
-.inputContainer > *:nth-child(2):hover * {
+.input_container > *:nth-child(2):hover * {
   color: var(--foreground-head);
 }
 
-.inputContainerMobile {
+.input_container_mobile {
   display: none;
 }
 
-.inputButton[type="file"] {
+.input_button[type="file"] {
   width: 350px;
   max-width: 100%;
   color: var(--foreground-muted);
@@ -70,7 +70,7 @@
   border: 1px solid var(--foreground-muted);
 }
 
-.inputButton[type="file"]::file-selector-button {
+.input_button[type="file"]::file-selector-button {
   margin-right: 20px;
   border: none;
   background: var(--foreground-head);
@@ -81,21 +81,21 @@
   transition: background 0.2s ease-in-out;
 }
 
-.inputButton[type="file"]::file-selector-button:hover {
+.input_button[type="file"]::file-selector-button:hover {
   background: var(--foreground-head-dark);
 }
 
 @media (max-width: 420px) {
-  .heroWrapper {
+  .hero_wrapper {
     flex-direction: column;
     gap: 0;
   }
 
-  .inputContainer {
+  .input_container {
     display: none;
   }
 
-  .inputContainerMobile {
+  .input_container_mobile {
     display: block;
     margin: 10px auto;
     width: 300px;
@@ -110,7 +110,7 @@
   border: 1px solid var(--foreground-muted);
   border-radius: 5px;
   box-shadow: inset 0 0 5px -2px var(--foreground);
-  margin: -15px auto 0 auto;
+  margin: -15px auto 0;
   padding: 10px;
   overflow-x: scroll;
   scrollbar-width: none;

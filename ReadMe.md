@@ -1,8 +1,8 @@
 # Split the Terminal for Following
-##  _Client_
+## _Client_
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-### Getting Started
+### Getting Started Client
 - First, install NodeJS following the [link](https://nodejs.org/en/download/package-manager)
 
 - Second, install node_modules package:
@@ -48,16 +48,16 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## _Server_
 
-### Getting Started
-The server side uses Flask API and requires following to be initialized
-- Create virtual environment 
+### Getting Started on Server
+The server-side uses Flask API and requires following to be initialized
+- Create virtual environment
     ```python -m venv venv```
 - Run virtual environment
     ```venv\Scripts\Activate.ps1```
 - Install Flask
     ```pip install Flask```
 - Exit from virtual environment
-    ```deactivate``` 
+    ```deactivate```
 - Run the server
     ```python server.py```
 

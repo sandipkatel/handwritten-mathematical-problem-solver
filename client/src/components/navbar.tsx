@@ -31,10 +31,10 @@ export default function NavBar() {
   };
 
   return (
-    <div className={styles.navbarContainer}>
+    <div className={styles.navbar_container}>
       <nav>
         <Link href="/" className="link">
-          <div className={styles.logoContainer}>
+          <div className={styles.logo_container}>
             <Image
               src="/favicon.ico"
               alt="infinity logo"
@@ -42,7 +42,7 @@ export default function NavBar() {
               width={32}
               height={32}
             />
-            <h2><span className="brand">Infinity</span> <span className="brandModel">Math Problem Solver</span></h2>
+            <h2><span className="brand">Infinity</span> <span className="brand_model">Math Problem Solver</span></h2>
           </div>
         </Link>
       </nav>

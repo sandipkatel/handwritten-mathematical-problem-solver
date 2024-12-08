@@ -4,10 +4,10 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <div className={styles.footerWrapper}>
-      <div className={styles.footerUpper}>
+    <div className={styles.footer_wrapper}>
+      <div className={styles.footer_upper}>
         <Link href="/" className="link">
-          <div className={styles.logoContainer}>
+          <div className={styles.logo_container}>
             <Image
               src="/favicon.ico"
               alt="infinity logo"
@@ -20,7 +20,7 @@ export default function Footer() {
             </h2>
           </div>
         </Link>
-        <div className={styles.footerNav}>
+        <div className={styles.footer_nav}>
           <Link href="/about" className={`link ${styles.link}`}>
             <h6>About Us</h6>
           </Link>
@@ -32,7 +32,7 @@ export default function Footer() {
       {/* <span className={styles.contact}>
             info@infinity.com
         </span> */}
-      <div className={styles.footerLower}>
+      <div className={styles.footer_lower}>
         <hr />
         <em>&copy; 2024 Infinity. All rights reserved.</em>
       </div>

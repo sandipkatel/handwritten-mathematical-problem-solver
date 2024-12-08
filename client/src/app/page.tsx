@@ -24,14 +24,14 @@ export default function Home() {
   return (
     <div>
       <div className={styles.heroContainer}>
-        <div className={styles.heroWrapper}>
+        <div className={styles.hero_wrapper}>
           {/* <h2>Your Problem</h2> */}
-          <div className={styles.heroImage}></div>
+          <div className={styles.hero_image}></div>
           {/* <h2>Our Solution</h2> */}
         </div>
 
         {/*DnD*/}
-        <div className={styles.inputContainer}>
+        <div className={styles.input_container}>
           <h3>Upload Your Problem</h3>
           {file ? (
             <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
@@ -47,7 +47,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className={styles.inputContainerMobile}>
+        <div className={styles.input_container_mobile}>
           <h3>Select Your Problem</h3>
           {file ? (
             <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
@@ -57,7 +57,7 @@ export default function Home() {
               id="images"
               accept="image/*"
               onChange={(e) => handleChange(e.target.files![0])}
-              className={styles.inputButton}
+              className={styles.input_button}
               required
             />
           )}

@@ -1,6 +1,6 @@
 # .super-linter.yml
 
-# Enable all linters by default (set to false if you want to enable specific ones manually)
+# Enable all linters by default
 run_all_linters: true
 
 # Exclude directories or files from linting
