@@ -60,7 +60,7 @@ export default function About() {
           <p>
             Infinity is more than a technology company; we are a collective of
             passionate innovators committed to pushing the boundaries of what&apos;s
-            possible. Our focus extends beyond mere technological development &hyphen;
+            possible. Our focus extends beyond mere technological development &#8208;
             we aim to create AI solutions that are ethical, inclusive, and
             genuinely transformative.
           </p>
