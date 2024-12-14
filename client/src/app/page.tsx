@@ -33,43 +33,47 @@ export default function Home() {
       {/*DnD*/}
       <div className={styles.input_container}>
         <h3>Upload Your Problem</h3>
-        {file ? (
-          <Image
-            src={URL.createObjectURL(file)}
-            alt={file.name}
-            height={400}
-            width={500}
-          />
-        ) : (
-          <FileUploader
-            handleChange={handleChange}
-            name="file"
-            types={fileTypes}
-            multiple={false}
-            maxSize={2}
-            uploadedLabel="Uploaded Successfully! "
-          />
+        <FileUploader
+          handleChange={handleChange}
+          name="file"
+          types={fileTypes}
+          multiple={false}
+          maxSize={2}
+          uploadedLabel="Uploaded Successfully! "
+        />
+        {file && (
+          <>
+            <h5>Uploaded File: </h5>
+            <Image
+              src={URL.createObjectURL(file)}
+              alt={file.name}
+              height={400}
+              width={500}
+            />
+          </>
         )}
       </div>
 
       <div className={styles.input_container_mobile}>
         <h3>Select Your Problem</h3>
-        {file ? (
-          <Image
-            src={URL.createObjectURL(file)}
-            alt={file.name}
-            height={200}
-            width={300}
-          />
-        ) : (
-          <input
-            type="file"
-            id="images"
-            accept="image/*"
-            onChange={(e) => handleChange(e.target.files![0])}
-            className={styles.input_button}
-            required
-          />
+        <input
+          type="file"
+          id="images"
+          accept="image/*"
+          onChange={(e) => handleChange(e.target.files![0])}
+          className={styles.input_button}
+          required
+        />
+        {file && (
+          <>
+            <h5>Selected File: </h5>
+            <Image
+              src={URL.createObjectURL(file)}
+              alt={file.name}
+              height={200}
+              width={300}
+            />
+          </>
         )}
       </div>
       <InputField file={file} />
@@ -92,7 +96,7 @@ function InputField({ file }: InputFieldProps) {
   }, [file]);
 
   function isDisabled() {
-    if (inputValue === "" || inputValue.trim() === "1 + 2(3 * (4 / 5))") {
+    if (inputValue.trim() === "") {
       return true;
     }
   }
