@@ -37,8 +37,8 @@ export default function Home() {
           <Image
             src={URL.createObjectURL(file)}
             alt={file.name}
-            height={500}
-            width={600}
+            height={400}
+            width={500}
           />
         ) : (
           <FileUploader
@@ -59,7 +59,7 @@ export default function Home() {
             src={URL.createObjectURL(file)}
             alt={file.name}
             height={200}
-            width={400}
+            width={300}
           />
         ) : (
           <input
@@ -73,7 +73,6 @@ export default function Home() {
         )}
       </div>
       <InputField file={file} />
-      <SolutionField file={file} />
     </div>
   );
 }
@@ -83,7 +82,8 @@ interface InputFieldProps {
 }
 
 function InputField({ file }: InputFieldProps) {
-  const [inputValue, setInputValue] = useState(file ? "1 + 2(3 * (4 / 5))" : "");
+  const [inputValue, setInputValue] = useState("");
+  const [submitStatus, setSubmitStatus] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -91,25 +91,24 @@ function InputField({ file }: InputFieldProps) {
     }
   }, [file]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    alert('A name was submitted: ' + inputValue);
-    e.preventDefault();
-    // onSubmitUsername(event.currentTarget.elements.problem.value)
-    // SolutionField({ file });
-  }
-
   function isDisabled() {
     if (inputValue === "" || inputValue.trim() === "1 + 2(3 * (4 / 5))") {
       return true;
     }
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setInputValue(inputValue.trim());
+    // onSubmitUsername(event.currentTarget.elements.problem.value)
+    setSubmitStatus(true);
+  }
+
   return (
     <div className={styles.problem_container}>
-      <h4>{file ? "Question Read" : "Or Enter the Question Below"}:</h4>
+      <h4>{file ? "Question Read" : "Or Enter Question Below"}:</h4>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
+        <textarea
           id="problem"
           placeholder="Enter the question in Latex format"
           className={styles.problem}
@@ -124,18 +123,23 @@ function InputField({ file }: InputFieldProps) {
           Submit
         </button>
       </form>
+      {submitStatus && <SolutionField data={inputValue} />}
     </div>
   );
 }
 
-function SolutionField({ file }: InputFieldProps) {
-  if (!file) return null;
+interface SolutionFieldProps {
+  data: string | null;
+}
+
+function SolutionField({ data }: SolutionFieldProps) {
+  if (!data) return null;
   return (
     <div className={styles.solution_container}>
-      <hr style={{ width: "100%" }} />
-      <h5>Solution:</h5>
+      {/* <hr style={{ width: "100%" }} /> */}
+      <h4>Solution:</h4>
       <div className={styles.solution}>
-        &nbsp;&nbsp;1 + 2(3 * (4 / 5))
+        &nbsp;&nbsp;{data}
         <br />= 1 + 2(3 * 0.8)
         <br />= 1 + 2(2.4)
         <br />= 1 + 4.8

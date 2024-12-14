@@ -95,6 +95,10 @@ body[data-theme="light"] {
 }
 
 @media (max-width: 420px) {
+  .main {
+    padding: 1rem 10px;
+  }
+
   .brand_model {
     display: none;
   }
