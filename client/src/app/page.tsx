@@ -66,7 +66,7 @@ export default function Home() {
         />
         {file && (
           <>
-            <h5>Selected File: </h5>
+            <h5>Selected Problem File: </h5>
             <Image
               src={URL.createObjectURL(file)}
               alt={file.name}
@@ -110,7 +110,7 @@ function InputField({ file }: InputFieldProps) {
 
   return (
     <div className={styles.problem_container}>
-      <h4>{file ? "Question Read" : "Or Enter Question Below"}:</h4>
+      <h4>{file ? "Problem Read" : "Or Enter Question Below"}:</h4>
       <form onSubmit={handleSubmit}>
         <textarea
           id="problem"
