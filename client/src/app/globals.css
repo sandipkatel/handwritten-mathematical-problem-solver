@@ -48,6 +48,10 @@ main {
   margin-top: 5px;
 }
 
+input {
+  color: var(--foreground);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground: #f5f5f5;

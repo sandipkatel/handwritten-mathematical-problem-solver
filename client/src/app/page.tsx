@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import styles from "@/app/page.module.css";
 import Image from "next/image";
@@ -13,6 +13,7 @@ export default function Home() {
   //     .then((response) => response.json())
   //     .then((data) => setMessage(data.people[0] + ": " + data.message));
   // }, []);
+
   const fileTypes = ["JPG", "PNG", "JPEG"];
   const [file, setFile] = useState<File | null>(null);
 
@@ -22,67 +23,124 @@ export default function Home() {
   };
 
   return (
-    <div>
-      <div className={styles.heroContainer}>
-        <div className={styles.hero_wrapper}>
-          {/* <h2>Your Problem</h2> */}
-          <div className={styles.hero_image}></div>
-          {/* <h2>Our Solution</h2> */}
-        </div>
-
-        {/*DnD*/}
-        <div className={styles.input_container}>
-          <h3>Upload Your Problem</h3>
-          {file ? (
-            <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
-          ) : (
-            <FileUploader
-              handleChange={handleChange}
-              name="file"
-              types={fileTypes}
-              multiple={false}
-              maxSize={2}
-              uploadedLabel="Uploaded Successfully! "
-            />
-          )}
-        </div>
-
-        <div className={styles.input_container_mobile}>
-          <h3>Select Your Problem</h3>
-          {file ? (
-            <Image src={URL.createObjectURL(file)} alt={file.name} height={200} width={400} />
-          ) : (
-            <input
-              type="file"
-              id="images"
-              accept="image/*"
-              onChange={(e) => handleChange(e.target.files![0])}
-              className={styles.input_button}
-              required
-            />
-          )}
-        </div>
+    <div className={styles.heroContainer}>
+      <div className={styles.hero_wrapper}>
+        {/* <h2>Your Problem</h2> */}
+        <div className={styles.hero_image}></div>
+        {/* <h2>Our Solution</h2> */}
       </div>
 
-      {file && (
-        <>
-          <div className={styles.problemContainer}>
-            <h5>Question Read:</h5>
-            <div className={styles.problem}>1 + 2(3 * (4 / 5))</div>
-          </div>
-          <div className={styles.solutionContainer}>
-            <hr style={{ width: "100%" }} />
-            <h5>Solution Generated:</h5>
-            <div className={styles.solution}>
-              &nbsp;&nbsp;1 + 2(3 * (4 / 5))
-              <br />= 1 + 2(3 * 0.8)
-              <br />= 1 + 2(2.4)
-              <br />= 1 + 4.8
-              <br />= 5.8
-            </div>
-          </div>
-        </>
-      )}
+      {/*DnD*/}
+      <div className={styles.input_container}>
+        <h3>Upload Your Problem</h3>
+        {file ? (
+          <Image
+            src={URL.createObjectURL(file)}
+            alt={file.name}
+            height={500}
+            width={600}
+          />
+        ) : (
+          <FileUploader
+            handleChange={handleChange}
+            name="file"
+            types={fileTypes}
+            multiple={false}
+            maxSize={2}
+            uploadedLabel="Uploaded Successfully! "
+          />
+        )}
+      </div>
+
+      <div className={styles.input_container_mobile}>
+        <h3>Select Your Problem</h3>
+        {file ? (
+          <Image
+            src={URL.createObjectURL(file)}
+            alt={file.name}
+            height={200}
+            width={400}
+          />
+        ) : (
+          <input
+            type="file"
+            id="images"
+            accept="image/*"
+            onChange={(e) => handleChange(e.target.files![0])}
+            className={styles.input_button}
+            required
+          />
+        )}
+      </div>
+      <InputField file={file} />
+      <SolutionField file={file} />
+    </div>
+  );
+}
+
+interface InputFieldProps {
+  file: File | null;
+}
+
+function InputField({ file }: InputFieldProps) {
+  const [inputValue, setInputValue] = useState(file ? "1 + 2(3 * (4 / 5))" : "");
+
+  useEffect(() => {
+    if (file) {
+      setInputValue("1 + 2(3 * (4 / 5))");
+    }
+  }, [file]);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    alert('A name was submitted: ' + inputValue);
+    e.preventDefault();
+    // onSubmitUsername(event.currentTarget.elements.problem.value)
+    // SolutionField({ file });
+  }
+
+  function isDisabled() {
+    if (inputValue === "" || inputValue.trim() === "1 + 2(3 * (4 / 5))") {
+      return true;
+    }
+  }
+
+  return (
+    <div className={styles.problem_container}>
+      <h4>{file ? "Question Read" : "Or Enter the Question Below"}:</h4>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          id="problem"
+          placeholder="Enter the question in Latex format"
+          className={styles.problem}
+          value={inputValue}
+          onChange={(evt) => setInputValue(evt.target.value)}
+        />
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isDisabled()}
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function SolutionField({ file }: InputFieldProps) {
+  if (!file) return null;
+  return (
+    <div className={styles.solution_container}>
+      <hr style={{ width: "100%" }} />
+      <h5>Solution:</h5>
+      <div className={styles.solution}>
+        &nbsp;&nbsp;1 + 2(3 * (4 / 5))
+        <br />= 1 + 2(3 * 0.8)
+        <br />= 1 + 2(2.4)
+        <br />= 1 + 4.8
+        <br />= 5.8
+      </div>
     </div>
   );
 }
