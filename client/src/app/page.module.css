@@ -103,6 +103,10 @@
   background-color: var(--foreground-head-dark);
 }
 
+.problem_container form button:disabled {
+  opacity: 0.5;
+}
+
 .problem_container input,
 .solution {
   text-align: left;
