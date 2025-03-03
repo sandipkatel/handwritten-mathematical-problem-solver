@@ -9,6 +9,10 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+*/.ipynb_checkpoints
+*/checkpoint_eval_2014_small_stage1_new_image
+*/data
+*/model_viz
 
 # testing
 */coverage
@@ -39,8 +43,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# text
-*.txt
 
 # environment
 */venv
