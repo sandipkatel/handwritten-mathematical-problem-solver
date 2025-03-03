@@ -1,0 +1,13 @@
+# notebooks
+*.ipynb
+**/*.ipynb
+
+# Ceckpoints
+*/.ipynb_checkpoints
+
+# Test files
+*.test.py
+**/*.test.py
+
+# Test Folders
+/TrOCR-Handwritten-Mathematical-Expression-Recognition/
