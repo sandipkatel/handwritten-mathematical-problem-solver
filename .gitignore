@@ -46,3 +46,9 @@ next-env.d.ts
 
 # environment
 */venv
+
+# Models
+**/model/
+
+# Uploads
+**/uploads/

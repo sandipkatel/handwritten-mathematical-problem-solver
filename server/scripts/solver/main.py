@@ -31,15 +31,15 @@ def main(latex_input):
         # Handle System of Linear Equations
         elif is_system_of_linear_equations(latex_input):
             return solve_system_of_equations(latex_input)
-        # Handle Polynomials
-        elif isinstance(expr, sp.Equality):
-            return solve_algebra(latex_input)
         # Handle Calculus
         elif isinstance(expr, sp.Derivative) or isinstance(expr, sp.Integral):
             return solve_calculus(latex_input)
+        # Handle Polynomials
+        elif isinstance(expr, sp.Equality) or expr.has(sp.Symbol):
+            return solve_algebra(latex_input)
         # Handle Arithmatic Simplification
         else:
-            return solve_common_math_problem(expr)
+            return solve_arithmetic_simplification(expr)
     except Exception as e:
         print("An unexpected error occurred:", str(e))
         return {

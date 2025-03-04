@@ -78,7 +78,7 @@ def handle_equation(equation, solve_for=None):
     
     # Display original equation
     print("Original equation:")
-    display(Math(sp.latex(left_side) + " = " + sp.latex(right_side)))
+    # display(Math(sp.latex(left_side) + " = " + sp.latex(right_side)))
     
     # Solve the equation
     solutions = sp.solve(equation, solve_for)
@@ -91,7 +91,7 @@ def handle_equation(equation, solve_for=None):
         print(f"Found {len(solutions)} solution(s):")
         for i, sol in enumerate(solutions):
             print(f"  Solution {i+1}: {solve_for} = {sol}")
-            display(Math(sp.latex(solve_for) + " = " + sp.latex(sol)))
+            # display(Math(sp.latex(solve_for) + " = " + sp.latex(sol)))
     
     # Visualize the equation
     plot_polynomial(expr, solve_for, solutions)
@@ -118,7 +118,7 @@ def analyze_polynomial(expr, variable=None):
     
     # Display the original expression
     print("Original polynomial:")
-    display(Math(sp.latex(expr)))
+    # display(Math(sp.latex(expr)))
     
     # Get polynomial degree
     degree = get_polynomial_degree(expr, variable)
@@ -126,34 +126,34 @@ def analyze_polynomial(expr, variable=None):
     
     # Expand the expression
     expanded = sp.expand(expr)
-    if expanded != expr:
-        print("Expanded form:")
-        display(Math(sp.latex(expanded)))
+    # if expanded != expr:
+    #     print("Expanded form:")
+    #     display(Math(sp.latex(expanded)))
     
     # Factor the expression
     factored = sp.factor(expr)
-    if factored != expr:
-        print("Factored form:")
-        display(Math(sp.latex(factored)))
+    # if factored != expr:
+    #     print("Factored form:")
+    #     display(Math(sp.latex(factored)))
     
     # Find the roots (zeros) of the polynomial
     roots = sp.solve(expr, variable)
     
-    if len(roots) > 0:
-        print(f"Roots of the polynomial (where {sp.latex(expr)} = 0):")
-        for i, root in enumerate(roots):
-            print(f"  Root {i+1}: {variable} = {root}")
-            display(Math(sp.latex(variable) + " = " + sp.latex(root)))
+    # if len(roots) > 0:
+    #     print(f"Roots of the polynomial (where {sp.latex(expr)} = 0):")
+    #     for i, root in enumerate(roots):
+    #         print(f"  Root {i+1}: {variable} = {root}")
+    #         display(Math(sp.latex(variable) + " = " + sp.latex(root)))
     
     # Compute derivative and critical points
     derivative = sp.diff(expr, variable)
     critical_points = sp.solve(derivative, variable)
     
-    if len(critical_points) > 0:
-        print("Critical points (where the derivative is zero):")
-        for i, cp in enumerate(critical_points):
-            print(f"  Critical point {i+1}: {variable} = {cp}")
-            display(Math(sp.latex(variable) + " = " + sp.latex(cp)))
+    # if len(critical_points) > 0:
+    #     print("Critical points (where the derivative is zero):")
+    #     for i, cp in enumerate(critical_points):
+    #         print(f"  Critical point {i+1}: {variable} = {cp}")
+    #         display(Math(sp.latex(variable) + " = " + sp.latex(cp)))
     
     # Visualize the polynomial
     plot_polynomial(expr, variable, roots, critical_points)
@@ -166,7 +166,7 @@ def analyze_polynomial(expr, variable=None):
         'roots': [sp.latex(root) for root in roots],
         'derivative': sp.latex(derivative),
         'critical_points': [sp.latex(cp) for cp in critical_points],
-        "final_result": sp.latex(expr) + r" has following roots" + [sp.latex(root) for root in roots]
+        "final_result": sp.latex(expr) + r" has following roots " + [sp.latex(root) for root in roots]
     }
 
 def get_polynomial_degree(expr, variable):

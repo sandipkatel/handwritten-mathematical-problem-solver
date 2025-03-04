@@ -72,13 +72,14 @@ app.post("/api/convert", upload.single("image"), (req, res) => {
 
 // Endpoint for solving math expressions
 app.post("/api/solve", (req, res) => {
+  console.log("Received a request to /api/solve");
   const { latex } = req.body;
   if (!latex) {
     return res.status(400).json({ error: "No LaTeX expression provided" });
   }
 
   // Run Python script to solve the expression
-  const python = spawn("python", ["scripts/solve.py", latex]);
+  const python = spawn("python", ["scripts/solver/main.py", latex]);
   let solutionOutput = "";
   let errorOutput = "";
 

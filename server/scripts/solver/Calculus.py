@@ -249,7 +249,7 @@ def handle_integration(expr):
         # display(Math(sp.latex(integrand)))
         print("Integration Result:", indefinite_integral)
         # display(Math(sp.latex(indefinite_integral)))
-        result_print = r"\\int" + {sp.latex(function)} + r" \, d" + sp.latex(var) +  r" = " + sp.latex(integral) + r"C"
+        result_print = sp.latex(expr) +  r" = " + sp.latex(indefinite_integral) + r"C"
 
         # Plot the indefinite integral
         plot_indefinite_integral(integrand, indefinite_integral, integration_var)
