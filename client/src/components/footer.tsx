@@ -1,41 +1,53 @@
 import styles from "@/styles/footer.module.css";
-import Image from "next/image";
-import Link from "next/link";
 
 export default function Footer() {
   return (
-    <div className={styles.footer_wrapper}>
-      <div className={styles.footer_upper}>
-        <Link href="/" className="link">
-          <div className={styles.logo_container}>
-            <Image
-              src="/favicon.ico"
-              alt="infinity logo"
-              className="logo"
-              width={32}
-              height={32}
-            />
-            <h2>
-              <span className="brand">Infinity</span>{" "}
-            </h2>
+    <footer className={styles.footer}>
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.section}>
+            <h3 className={styles.title}>Infinity Math Solver</h3>
+            <p className={styles.description}>
+              A powerful tool to convert handwritten math expressions to LaTeX
+              and solve them.
+            </p>
           </div>
-        </Link>
-        <div className={styles.footer_nav}>
-          <Link href="/about" className={`link ${styles.link}`}>
-            <h6>About Us</h6>
-          </Link>
-          <Link href="/" className={`link ${styles.link}`}>
-            <h6>Other</h6>
-          </Link>
+
+          <div className={styles.section}>
+            <h3 className={styles.title}>Quick Links</h3>
+            <ul className={styles.links}>
+              <li>
+                <a href="/">Home</a>
+              </li>
+              <li>
+                <a href="/about">About</a>
+              </li>
+              <li>
+                <a href="/contact">Contact</a>
+              </li>
+              <li>
+                <a href="/privacy">Privacy Policy</a>
+              </li>
+            </ul>
+          </div>
+
+          <div className={styles.section}>
+            <h3 className={styles.title}>Contact</h3>
+            <p className={styles.contactInfo}>
+              Email: info@infinitymath.com
+              <br />
+              Phone: +1 (123) 456-7890
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.copyright}>
+          <p>
+            &copy; {new Date().getFullYear()} Infinity Math Solver. All rights
+            reserved.
+          </p>
         </div>
       </div>
-      {/* <span className={styles.contact}>
-            info@infinity.com
-        </span> */}
-      <div className={styles.footer_lower}>
-        <hr />
-        <em>&copy; 2024 Infinity. All rights reserved.</em>
-      </div>
-    </div>
+    </footer>
   );
 }

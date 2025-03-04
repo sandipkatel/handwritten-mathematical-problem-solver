@@ -3,54 +3,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import styles from "@/styles/navbar.module.css";
-import { useEffect, useState } from "react";
 
 export default function NavBar() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      document.body.setAttribute("data-theme", "dark");
-      setIsDarkMode(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode((prevMode) => {
-      const newMode = !prevMode;
-      if (newMode) {
-        document.body.setAttribute("data-theme", "dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.body.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", "light");
-      }
-      return newMode;
-    });
-  };
-
   return (
-    <div className={styles.navbar_container}>
-      <nav>
-        <Link href="/" className="link">
-          <div className={styles.logo_container}>
+    <div className={styles.navbar}>
+      <div className={styles.container}>
+        <Link href="/" className={styles.logoLink}>
+          <div className={styles.logoContainer}>
             <Image
               src="/favicon.ico"
               alt="infinity logo"
-              className="logo"
+              className={styles.logo}
               width={32}
               height={32}
             />
-            <h2><span className="brand">Infinity</span> <span className="brand_model">Math Problem Solver</span></h2>
+            <h1 className={styles.logoText}>
+              <span className={styles.brand}>Infinity</span>{" "}
+              <span className={styles.brandModel}>Math Problem Solver</span>
+            </h1>
           </div>
         </Link>
-      </nav>
-      <div className={styles.themeSwitch}>
-        <label className={styles.switch}>
-          <input type="checkbox" checked={isDarkMode} onChange={toggleTheme} />
-          <span className={styles.slider}></span>
-        </label>
+        <nav className={styles.nav}>
+          <Link href="/" className={styles.navLink}>
+            Home
+          </Link>
+          <Link href="/about" className={styles.navLink}>
+            About
+          </Link>
+          <Link href="/contact" className={styles.navLink}>
+            Contact
+          </Link>
+        </nav>
       </div>
     </div>
   );
