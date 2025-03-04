@@ -1,3 +1,69 @@
+.navbar {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  padding: 0.75rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logoLink {
+  text-decoration: none;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  filter: brightness(0) invert(1);
+}
+
+.logoText {
+  margin: 0;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.brand {
+  font-family: "Brush Script MT", "Lucida Handwriting", cursive;
+  font-weight: 700;
+}
+
+.brandModel {
+  font-family: "Lucida Handwriting", "Brush Script MT", cursive;
+  font-weight: 400;
+  font-size: 1.2rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.navLink {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .navbar_container {
   display: flex;
   flex-direction: row;
@@ -9,21 +75,49 @@
   border: 2px solid var(--foreground);
   border-radius: 1rem;
   margin: 0 auto;
-  padding: auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 0.75rem 1.25rem;
+  transition: all 0.3s ease;
 }
 
-.navbbarContainer nav,
+.navbar_container nav,
 .logo_container {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-content: center;
+  align-items: center;
   gap: 12px;
 }
 
-/* Background color toggle button */
+.themeSwitch {
+  display: flex;
+  align-items: center;
+}
+
+.themeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: var(--foreground);
+  background-color: var(--background-muted);
+  transition: all 0.3s ease;
+}
+
+.themeButton:hover {
+  background-color: var(--background-main);
+  transform: rotate(15deg);
+}
+
+.themeIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Background color toggle button - keeping for backward compatibility */
 .switch {
   position: relative;
   display: inline-block;
@@ -63,12 +157,53 @@ input:checked + .slider::before {
   transform: translateX(19px);
 }
 
+@media (max-width: 640px) {
+  .logo_container {
+    gap: 8px;
+  }
+
+  .navbar_container {
+    width: 95%;
+    padding: 0.5rem 1rem;
+  }
+}
+
 @media (max-width: 420px) {
   .logo_container {
-    gap: 0;
+    gap: 4px;
   }
 
   .navbar_container {
     height: 40px;
+    width: 98%;
+    padding: 0.25rem 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .brandModel {
+    display: none;
+  }
+
+  .nav {
+    gap: 0.5rem;
+  }
+
+  .navLink {
+    padding: 0.5rem;
+    font-size: 0.9rem;
   }
 }

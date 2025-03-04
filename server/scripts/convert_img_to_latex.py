@@ -7,22 +7,22 @@ import os
 def convert_image_to_latex(image_path):
     
 
-    current_dir = os.path.dirname(__file__)
-    model_dir = os.path.join(current_dir, '../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
+    # current_dir = os.path.dirname(__file__)
+    # model_dir = os.path.join(current_dir, '../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
     
-    # Load the processor and model
-    processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
-    model = VisionEncoderDecoderModel.from_pretrained(model_dir)
+    # # Load the processor and model
+    # processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
+    # model = VisionEncoderDecoderModel.from_pretrained(model_dir)
     
-    # Load and preprocess the image
-    img = Image.open(image_path).convert("RGB")
-    img = ImageEnhance.Sharpness(img).enhance(2.0)
-    pixel_values = processor(img, return_tensors="pt").pixel_values
+    # # Load and preprocess the image
+    # img = Image.open(image_path).convert("RGB")
+    # img = ImageEnhance.Sharpness(img).enhance(2.0)
+    # pixel_values = processor(img, return_tensors="pt").pixel_values
     
-    # Generate LaTeX text
-    generated_ids = model.generate(pixel_values)
-    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    # generated_text = '2 x ^ { 3 } + 9 x ^ { 2 } +  1 3 x + 6 = 0'
+    # # Generate LaTeX text
+    # generated_ids = model.generate(pixel_values)
+    # generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    generated_text = ' \frac {d } { d x } ( \sin ^ { 3 } x )'
     return generated_text
 
 if __name__ == "__main__":

@@ -3,27 +3,37 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import {
-  Camera,
   Upload,
-  Check,
+  Camera,
   RefreshCw,
-  Download,
   Copy,
+  Check,
+  Download,
+  Edit,
+  Save,
   FileText,
   Code,
+  Moon,
+  Sun,
 } from "lucide-react";
+
+import { useTheme } from "next-themes";
 import styles from "@/app/page.module.css";
+import nerdamer from "nerdamer";
+import "nerdamer/all";
 
 export default function HandwritingConverter() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recognizedLatex, setRecognizedLatex] = useState<string>("");
-  const [displayMode, setDisplayMode] = useState<"latex" | "normal">("normal");
+  const [editedLatex, setEditedLatex] = useState<string>("");
+  const [displayMode, setDisplayMode] = useState<"latex" | "normal">("latex");
   const [error, setError] = useState<string | null>(null);
   const [isSolved, setIsSolved] = useState(false);
   const [solution, setSolution] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Handle file selection
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,6 +83,7 @@ export default function HandwritingConverter() {
 
       const data = await response.json();
       setRecognizedLatex(data.latex);
+      setEditedLatex(data.latex);
       setIsProcessing(false);
     } catch (err) {
       console.error("Error processing image:", err);
@@ -85,19 +96,17 @@ export default function HandwritingConverter() {
 
   // Solve the recognized expression
   const solveExpression = async () => {
-    if (!recognizedLatex) return;
+    if (!editedLatex) return;
 
     setIsSolved(false);
 
     try {
-      // Uncomment for actual API implementation
-
       const response = await fetch("http://localhost:5000/api/solve", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ latex: recognizedLatex }),
+        body: JSON.stringify({ latex: editedLatex }),
       });
 
       if (!response.ok) {
@@ -118,10 +127,12 @@ export default function HandwritingConverter() {
     setFile(null);
     setPreviewUrl(null);
     setRecognizedLatex("");
+    setEditedLatex("");
     setError(null);
     setIsSolved(false);
     setSolution(null);
     setCopiedText(null);
+    setIsEditing(false);
   };
 
   // Copy text to clipboard
@@ -131,36 +142,31 @@ export default function HandwritingConverter() {
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  // Convert LaTeX to normal text (simplified version)
+  // Convert LaTeX to more readable normal text (simplified version)
   const latexToNormalText = (latex: string): string => {
-    if (!latex) return "";
+    try {
+      const expression = nerdamer.convertFromLaTeX(latex);
+      return expression.toString();
+    } catch (error) {
+      console.error("Error converting LaTeX:", error);
+      return "Invalid expression";
+    }
+  };
 
-    // This is a simplified conversion - a real implementation would be more comprehensive
-    let normalText = latex
-      .replace(/\^(\d+|{.+?})/g, (match, p1) => {
-        // Handle superscripts
-        if (p1.startsWith("{") && p1.endsWith("}")) {
-          return `^(${p1.substring(1, p1.length - 1)})`;
-        }
-        return `^(${p1})`;
-      })
-      .replace(/\\frac{(.+?)}{(.+?)}/g, "$1/$2")
-      .replace(/\\sqrt{(.+?)}/g, "√($1)")
-      .replace(/\\cdot/g, "×")
-      .replace(/\\times/g, "×")
-      .replace(/\\div/g, "÷");
+  // Start editing the LaTeX
+  const startEditing = () => {
+    setIsEditing(true);
+  };
 
-    return normalText;
+  // Save the edited LaTeX
+  const saveEdit = () => {
+    setRecognizedLatex(editedLatex);
+    setIsEditing(false);
   };
 
   return (
     <MathJaxContext>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <h1>Handwriting to LaTeX Converter</h1>
-          <p>Convert your handwritten math expressions to LaTeX format</p>
-        </header>
-
+      <div className={styles.pageContainer}>
         <main className={styles.mainContent}>
           <section className={styles.uploadSection}>
             <div
@@ -178,7 +184,22 @@ export default function HandwritingConverter() {
                     className={styles.previewImage}
                   />
                   <button className={styles.resetButton} onClick={handleReset}>
-                    <RefreshCw size={16} />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                      <path d="M3 3v5h5"></path>
+                      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                      <path d="M16 21h5v-5"></path>
+                    </svg>
                     New Image
                   </button>
                 </div>
@@ -221,7 +242,7 @@ export default function HandwritingConverter() {
             <section className={styles.recognizedSection}>
               <div className={styles.recognizedHeader}>
                 <h2>Recognized Expression</h2>
-                <div className={styles.displayToggle}>
+                {/* <div className={styles.displayToggle}>
                   <button
                     className={`${styles.toggleButton} ${
                       displayMode === "normal" ? styles.active : ""
@@ -240,24 +261,57 @@ export default function HandwritingConverter() {
                     <Code size={16} />
                     LaTeX
                   </button>
-                </div>
+                </div> */}
               </div>
 
               <div className={styles.recognizedContent}>
                 {displayMode === "latex" ? (
                   <div className={styles.latexView}>
-                    <pre className={styles.codeBlock}>{recognizedLatex}</pre>
-                    <button
-                      className={styles.copyButton}
-                      onClick={() => copyToClipboard(recognizedLatex, "latex")}
-                    >
-                      {copiedText === "latex" ? (
-                        <Check size={16} />
-                      ) : (
-                        <Copy size={16} />
-                      )}
-                      {copiedText === "latex" ? "Copied!" : "Copy LaTeX"}
-                    </button>
+                    {isEditing ? (
+                      <div className={styles.editContainer}>
+                        <textarea
+                          className={styles.editTextarea}
+                          value={editedLatex}
+                          onChange={(e) => setEditedLatex(e.target.value)}
+                          rows={4}
+                        />
+                        <button
+                          className={styles.saveEditButton}
+                          onClick={saveEdit}
+                        >
+                          <Save size={16} />
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <pre className={styles.codeBlock}>
+                          {recognizedLatex}
+                        </pre>
+                        <div className={styles.buttonGroup}>
+                          <button
+                            className={styles.editButton}
+                            onClick={startEditing}
+                          >
+                            <Edit size={16} />
+                            Edit
+                          </button>
+                          <button
+                            className={styles.copyButton}
+                            onClick={() =>
+                              copyToClipboard(recognizedLatex, "latex")
+                            }
+                          >
+                            {copiedText === "latex" ? (
+                              <Check size={16} />
+                            ) : (
+                              <Copy size={16} />
+                            )}
+                            {copiedText === "latex" ? "Copied!" : "Copy LaTeX"}
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className={styles.normalView}>

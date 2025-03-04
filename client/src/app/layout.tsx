@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Head from "next/head";
-// import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -18,22 +16,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Head>
+      <head>
         <link rel="icon" href="/favicon.ico" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
         />
-        <meta name="color-scheme" content="light dark" />
-      </Head>
+      </head>
       <body>
-        <header>
-          <NavBar />
-        </header>
+        <NavBar />
         <main>{children}</main>
-        <footer>
-          <Footer />
-        </footer>
+        <Footer />
       </body>
     </html>
   );
