@@ -34,18 +34,11 @@ export default function Footer() {
           <div className={styles.section}>
             <h3 className={styles.title}>Contact</h3>
             <p className={styles.contactInfo}>
-              Email: info@infinitymath.com
+              Email: teamByteBrahma@gmail.com
               <br />
               Phone: +1 (123) 456-7890
             </p>
           </div>
-        </div>
-
-        <div className={styles.copyright}>
-          <p>
-            &copy; {new Date().getFullYear()} Infinity Math Solver. All rights
-            reserved.
-          </p>
         </div>
       </div>
     </footer>

@@ -206,11 +206,25 @@ export default function HandwritingConverter() {
               ) : (
                 <div className={styles.uploadPrompt}>
                   <div className={styles.uploadIcon}>
-                    <Upload size={48} />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
                   </div>
                   <h3>Drag & Drop or Click to Upload</h3>
                   <p>Supported formats: JPG, PNG, JPEG (max 5MB)</p>
-                  <label className={styles.fileInputLabel}>
+                  <label className={styles.uploadButton}>
                     <input
                       type="file"
                       accept="image/*"
@@ -239,7 +253,7 @@ export default function HandwritingConverter() {
           </section>
 
           {recognizedLatex && (
-            <section className={styles.recognizedSection}>
+            <section className={styles.resultSection}>
               <div className={styles.recognizedHeader}>
                 <h2>Recognized Expression</h2>
                 {/* <div className={styles.displayToggle}>
@@ -266,7 +280,7 @@ export default function HandwritingConverter() {
 
               <div className={styles.recognizedContent}>
                 {displayMode === "latex" ? (
-                  <div className={styles.latexView}>
+                  <div className={styles.latexContainer}>
                     {isEditing ? (
                       <div className={styles.editContainer}>
                         <textarea
@@ -276,39 +290,105 @@ export default function HandwritingConverter() {
                           rows={4}
                         />
                         <button
-                          className={styles.saveEditButton}
+                          className={styles.saveButton}
                           onClick={saveEdit}
                         >
-                          <Save size={16} />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                          </svg>
                           Save
                         </button>
                       </div>
                     ) : (
                       <>
-                        <pre className={styles.codeBlock}>
-                          {recognizedLatex}
-                        </pre>
-                        <div className={styles.buttonGroup}>
-                          <button
-                            className={styles.editButton}
-                            onClick={startEditing}
-                          >
-                            <Edit size={16} />
-                            Edit
-                          </button>
-                          <button
-                            className={styles.copyButton}
-                            onClick={() =>
-                              copyToClipboard(recognizedLatex, "latex")
-                            }
-                          >
-                            {copiedText === "latex" ? (
-                              <Check size={16} />
-                            ) : (
-                              <Copy size={16} />
-                            )}
-                            {copiedText === "latex" ? "Copied!" : "Copy LaTeX"}
-                          </button>
+                        <div className={styles.codeDisplay}>
+                          <pre className={styles.codeBlock}>
+                            {recognizedLatex}
+                          </pre>
+                          <div className={styles.codeActions}>
+                            <button
+                              className={styles.actionButton}
+                              onClick={startEditing}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              className={styles.actionButton}
+                              onClick={() =>
+                                copyToClipboard(recognizedLatex, "latex")
+                              }
+                            >
+                              {copiedText === "latex" ? (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                  </svg>
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <rect
+                                      x="9"
+                                      y="9"
+                                      width="13"
+                                      height="13"
+                                      rx="2"
+                                      ry="2"
+                                    ></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                  </svg>
+                                  Copy LaTeX
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </>
                     )}
@@ -337,8 +417,7 @@ export default function HandwritingConverter() {
                   </div>
                 )}
 
-                <div className={styles.renderedMath}>
-                  <h3>Rendered Expression</h3>
+                <div className={styles.renderedContainer}>
                   <div className={styles.mathDisplay}>
                     <MathJax>{"$$" + recognizedLatex + "$$"}</MathJax>
                   </div>
@@ -350,10 +429,24 @@ export default function HandwritingConverter() {
                     onClick={solveExpression}
                     disabled={!recognizedLatex || isProcessing}
                   >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                     Solve Expression
                   </button>
 
-                  <button
+                  {/* <button
                     className={styles.downloadButton}
                     onClick={() => {
                       const blob = new Blob([recognizedLatex], {
@@ -368,7 +461,7 @@ export default function HandwritingConverter() {
                   >
                     <Download size={16} />
                     Download LaTeX
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </section>
@@ -384,20 +477,53 @@ export default function HandwritingConverter() {
                   onClick={() => copyToClipboard(solution, "solution")}
                 >
                   {copiedText === "solution" ? (
-                    <Check size={16} />
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Copied!
+                    </>
                   ) : (
-                    <Copy size={16} />
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect
+                          x="9"
+                          y="9"
+                          width="13"
+                          height="13"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      Copy Solution
+                    </>
                   )}
-                  {copiedText === "solution" ? "Copied!" : "Copy Solution"}
                 </button>
               </div>
             </section>
           )}
         </main>
-
-        <footer className={styles.footer}>
-          <p>Handwriting to LaTeX OCR Tool © {new Date().getFullYear()}</p>
-        </footer>
       </div>
     </MathJaxContext>
   );
