@@ -48,7 +48,7 @@ def solve_algebra(expr_latex, solve_for=None):
             return analyze_polynomial(expr, solve_for)
             
     except Exception as e:
-        print(f"Error in algebra solver: {str(e)}")
+        # print(f"Error in algebra solver: {str(e)}")
         return {
             "error": str(e),
             "original": expr_latex
@@ -77,18 +77,23 @@ def handle_equation(equation, solve_for=None):
     degree = get_polynomial_degree(expr, solve_for)
     
     # Display original equation
-    print("Original equation:")
+    # print("Original equation:")
     # display(Math(sp.latex(left_side) + " = " + sp.latex(right_side)))
     
     # Solve the equation
     solutions = sp.solve(equation, solve_for)
     
     # Display results
-    print(f"Solving for {solve_for}:")
+    # print(f"Solving for {solve_for}:")
     if len(solutions) == 0:
         print("No solutions found.")
     else:
         print(f"Found {len(solutions)} solution(s):")
+
+# Replace I with I for sympy compatibility
+  
+
+        
         for i, sol in enumerate(solutions):
             print(f"  Solution {i+1}: {solve_for} = {sol}")
             # display(Math(sp.latex(solve_for) + " = " + sp.latex(sol)))
@@ -117,12 +122,12 @@ def analyze_polynomial(expr, variable=None):
         variable = all_symbols[0]
     
     # Display the original expression
-    print("Original polynomial:")
+    # print("Original polynomial:")
     # display(Math(sp.latex(expr)))
     
     # Get polynomial degree
     degree = get_polynomial_degree(expr, variable)
-    print(f"Degree: {degree}")
+    # print(f"Degree: {degree}")
     
     # Expand the expression
     expanded = sp.expand(expr)
@@ -250,7 +255,8 @@ def plot_polynomial(expr, variable, roots=None, critical_points=None):
                     plt.text(x_root, 0, f"  Root: {x_root:.2f}", 
                              verticalalignment='bottom')
             except:
-                print(f"Could not plot root: {root}")
+                pass
+                # print(f"Could not plot root: {root}")
     
     # Mark the critical points
     if critical_points:
@@ -263,7 +269,8 @@ def plot_polynomial(expr, variable, roots=None, critical_points=None):
                     plt.text(x_cp, y_cp, f"  Critical Point: {x_cp:.2f}", 
                              verticalalignment='top')
             except:
-                print(f"Could not plot critical point: {cp}")
+                pass
+                # print(f"Could not plot critical point: {cp}")
     
     # Add labels and title
     plt.xlabel(f"${variable}$", fontsize=12)
@@ -308,7 +315,7 @@ def solve_system_of_equations(equations, variables=None):
         eq_list.append(eq)
     
     # Display the system
-    print("System of equations:")
+    # print("System of equations:")
     for i, eq in enumerate(eq_list):
         display(Math(sp.latex(eq)))
     
@@ -439,7 +446,8 @@ def plot_2d_system(equations, variables, solutions):
                     valid_indices = np.isfinite(x)
                     plt.plot(x[valid_indices], y[valid_indices], color=color)
                 except Exception as e:
-                    print(f"Error plotting x=f(y): {e}")
+                    pass
+                    # print(f"Error plotting x=f(y): {e}")
         except:
             pass
     
@@ -454,7 +462,8 @@ def plot_2d_system(equations, variables, solutions):
                     plt.text(x_sol, y_sol, f"  ({x_sol:.2f}, {y_sol:.2f})", 
                              verticalalignment='bottom')
                 except:
-                    print(f"Could not plot solution: {sol}")
+                    pass
+                    # print(f"Could not plot solution: {sol}")
     
     # Add labels and title
     plt.xlabel(f"${x_var}$", fontsize=12)
@@ -480,3 +489,18 @@ def plot_2d_system(equations, variables, solutions):
     
     plt.savefig("result.png", dpi=300, bbox_inches='tight')
     # plt.show()
+
+def solve_expression(expression_str):
+    # Convert the string into a sympy expression
+    expression = sp.sympify(expression_str)
+
+    # Simplify the expression
+    simplified_expression = sp.simplify(expression)
+
+    # If the expression is an equation, solve it
+    if expression.is_Eq:
+        solution = sp.solve(expression, dict=True)
+    else:
+        solution = simplified_expression
+
+    return solution

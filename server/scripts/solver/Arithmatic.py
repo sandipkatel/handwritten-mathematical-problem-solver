@@ -17,7 +17,7 @@ def solve_arithmetic_simplification(expr):
         # Convert both original and simplified expressions to LaTeX
         original_latex = sp.latex(expr)
         simplified_latex = sp.latex(simplified)
-        
+        print(simplified_latex)
         # Return a dictionary with LaTeX representations
         return {
             "original": original_latex,

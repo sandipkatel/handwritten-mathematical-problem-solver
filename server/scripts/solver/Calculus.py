@@ -215,7 +215,7 @@ def handle_integration(expr):
         # Display results
         print(f"Definite integral from {lower_bound} to {upper_bound}:")
         print(f"∫({integrand}) d{integration_var} = {integral_result}")
-        print("\nOriginal expression:", integrand)
+        # print("\nOriginal expression:", integrand)
         display(Math(sp.latex(integrand)))
         print(f"Indefinite integral: {indefinite_integral}")
         display(Math(sp.latex(indefinite_integral)))
@@ -245,7 +245,7 @@ def handle_integration(expr):
         
         # Display results
         print("Indefinite integration:")
-        print("Original expression:", integrand)
+        # print("Original expression:", integrand)
         # display(Math(sp.latex(integrand)))
         print("Integration Result:", indefinite_integral)
         # display(Math(sp.latex(indefinite_integral)))

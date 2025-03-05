@@ -472,7 +472,7 @@ export default function HandwritingConverter() {
               <h2>Solution</h2>
               <div className={styles.solutionContent}>
                 <pre className={styles.solutionSteps}>{solution}</pre>
-                <button
+                {/* <button
                   className={styles.copyButton}
                   onClick={() => copyToClipboard(solution, "solution")}
                 >
@@ -519,7 +519,7 @@ export default function HandwritingConverter() {
                       Copy Solution
                     </>
                   )}
-                </button>
+                </button> */}
               </div>
             </section>
           )}
