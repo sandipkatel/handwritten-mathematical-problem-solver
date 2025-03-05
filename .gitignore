@@ -52,3 +52,6 @@ next-env.d.ts
 
 # Uploads
 **/uploads/
+
+# Cache files
+**/__pycache__/*
