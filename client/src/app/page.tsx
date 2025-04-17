@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import {
@@ -16,11 +16,17 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-
+import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import styles from "@/app/page.module.css";
 import nerdamer from "nerdamer";
 import "nerdamer/all";
+import Script from "next/script";
+
+// MathLive needs to be imported this way to prevent SSR issues
+const MathQuillEditor = dynamic(() => import("../components/MathQuillEditor"), {
+  ssr: false,
+});
 
 export default function HandwritingConverter() {
   const [file, setFile] = useState<File | null>(null);
@@ -34,6 +40,8 @@ export default function HandwritingConverter() {
   const [solution, setSolution] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isRenderedEditing, setIsRenderedEditing] = useState(false);
+  const mathEditorRef = useRef<any>(null);
 
   // Handle file selection
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +79,7 @@ export default function HandwritingConverter() {
     formData.append("image", imageFile);
 
     try {
-      const response = await fetch("http://localhost:5000/api/convert", {
+      const response = await fetch("http://localhost:8080/api/convert/", {
         method: "POST",
         body: formData,
       });
@@ -99,9 +107,11 @@ export default function HandwritingConverter() {
     if (!editedLatex) return;
 
     setIsSolved(false);
+    setError(null);
+    setSolution(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/solve", {
+      const response = await fetch("http://localhost:8080/api/solve/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,16 +119,18 @@ export default function HandwritingConverter() {
         body: JSON.stringify({ latex: editedLatex }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to calculate solution");
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        throw new Error(result.error || "Failed to solve the expression");
       }
 
-      const result = await response.json();
       setSolution(result.solution);
       setIsSolved(true);
     } catch (error) {
       console.error("Error solving expression:", error);
-      setError("Failed to solve the expression");
+      setError(error instanceof Error ? error.message : "An error occurred");
+      setIsSolved(false);
     }
   };
 
@@ -133,6 +145,7 @@ export default function HandwritingConverter() {
     setSolution(null);
     setCopiedText(null);
     setIsEditing(false);
+    setIsRenderedEditing(false);
   };
 
   // Copy text to clipboard
@@ -153,7 +166,7 @@ export default function HandwritingConverter() {
     }
   };
 
-  // Start editing the LaTeX
+  // Start editing the LaTeX code
   const startEditing = () => {
     setIsEditing(true);
   };
@@ -164,367 +177,341 @@ export default function HandwritingConverter() {
     setIsEditing(false);
   };
 
+  // Start editing the rendered expression
+  const startRenderedEditing = () => {
+    setIsRenderedEditing(true);
+  };
+
+  // Handle math editor changes
+  const handleMathEditorChange = (latex: string) => {
+    setEditedLatex(latex);
+  };
+
+  // Save the rendered math edit
+  const saveRenderedEdit = () => {
+    setRecognizedLatex(editedLatex);
+    setIsRenderedEditing(false);
+  };
+
   return (
-    <MathJaxContext>
-      <div className={styles.pageContainer}>
-        <main className={styles.mainContent}>
-          <section className={styles.uploadSection}>
-            <div
-              className={styles.dropZone}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-            >
-              {previewUrl ? (
-                <div className={styles.previewContainer}>
-                  <Image
-                    src={previewUrl}
-                    alt="Preview"
-                    width={400}
-                    height={300}
-                    className={styles.previewImage}
-                  />
-                  <button className={styles.resetButton} onClick={handleReset}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                      <path d="M3 3v5h5"></path>
-                      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-                      <path d="M16 21h5v-5"></path>
-                    </svg>
-                    New Image
-                  </button>
-                </div>
-              ) : (
-                <div className={styles.uploadPrompt}>
-                  <div className={styles.uploadIcon}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="17 8 12 3 7 8"></polyline>
-                      <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                  </div>
-                  <h3>Drag & Drop or Click to Upload</h3>
-                  <p>Supported formats: JPG, PNG, JPEG (max 5MB)</p>
-                  <label className={styles.uploadButton}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className={styles.fileInput}
+    <>
+      <Script
+        src="https://unpkg.com/mathlive/dist/mathlive.min.js"
+        strategy="beforeInteractive"
+      />
+      <MathJaxContext>
+        <div className={styles.pageContainer}>
+          <main className={styles.mainContent}>
+            <section className={styles.uploadSection}>
+              <div
+                className={styles.dropZone}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+              >
+                {previewUrl ? (
+                  <div className={styles.previewContainer}>
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
+                      width={400}
+                      height={300}
+                      className={styles.previewImage}
                     />
-                    <Camera size={16} />
-                    Choose Image
-                  </label>
+                    <button
+                      className={styles.resetButton}
+                      onClick={handleReset}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                        <path d="M16 21h5v-5"></path>
+                      </svg>
+                      New Image
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.uploadPrompt}>
+                    <div className={styles.uploadIcon}>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                    </div>
+                    <h3>Drag & Drop or Click to Upload</h3>
+                    <p>Supported formats: JPG, PNG, JPEG (max 5MB)</p>
+                    <label className={styles.uploadButton}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className={styles.fileInput}
+                      />
+                      <Camera size={16} />
+                      Choose Image
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {isProcessing && (
+                <div className={styles.processingIndicator}>
+                  <div className={styles.spinner}></div>
+                  <p>Processing your image...</p>
                 </div>
               )}
-            </div>
 
-            {isProcessing && (
-              <div className={styles.processingIndicator}>
-                <div className={styles.spinner}></div>
-                <p>Processing your image...</p>
-              </div>
-            )}
+              {error && (
+                <div className={styles.errorMessage}>
+                  <p>Error: {error}</p>
+                </div>
+              )}
+            </section>
 
-            {error && (
-              <div className={styles.errorMessage}>
-                <p>Error: {error}</p>
-              </div>
-            )}
-          </section>
+            {recognizedLatex && (
+              <section className={styles.resultSection}>
+                <div className={styles.recognizedHeader}>
+                  <h2>Recognized Expression</h2>
+                </div>
 
-          {recognizedLatex && (
-            <section className={styles.resultSection}>
-              <div className={styles.recognizedHeader}>
-                <h2>Recognized Expression</h2>
-                {/* <div className={styles.displayToggle}>
-                  <button
-                    className={`${styles.toggleButton} ${
-                      displayMode === "normal" ? styles.active : ""
-                    }`}
-                    onClick={() => setDisplayMode("normal")}
-                  >
-                    <FileText size={16} />
-                    Normal
-                  </button>
-                  <button
-                    className={`${styles.toggleButton} ${
-                      displayMode === "latex" ? styles.active : ""
-                    }`}
-                    onClick={() => setDisplayMode("latex")}
-                  >
-                    <Code size={16} />
-                    LaTeX
-                  </button>
-                </div> */}
-              </div>
-
-              <div className={styles.recognizedContent}>
-                {displayMode === "latex" ? (
-                  <div className={styles.latexContainer}>
-                    {isEditing ? (
-                      <div className={styles.editContainer}>
-                        <textarea
-                          className={styles.editTextarea}
-                          value={editedLatex}
-                          onChange={(e) => setEditedLatex(e.target.value)}
-                          rows={4}
-                        />
-                        <button
-                          className={styles.saveButton}
-                          onClick={saveEdit}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                            <polyline points="7 3 7 8 15 8"></polyline>
-                          </svg>
-                          Save
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className={styles.codeDisplay}>
-                          <pre className={styles.codeBlock}>
-                            {recognizedLatex}
-                          </pre>
-                          <div className={styles.codeActions}>
+                <div className={styles.recognizedContent}>
+                  {displayMode === "latex" ? (
+                    <div className={styles.latexContainer}>
+                      {isEditing ? (
+                        <div className={styles.editContainer}>
+                          <textarea
+                            className={styles.editTextarea}
+                            value={editedLatex}
+                            onChange={(e) => setEditedLatex(e.target.value)}
+                            rows={4}
+                          />
+                          <div className={styles.mathEditingControls}>
                             <button
-                              className={styles.actionButton}
-                              onClick={startEditing}
+                              className={styles.saveButton}
+                              onClick={saveEdit}
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                              </svg>
-                              Edit
+                              <Save size={16} />
+                              Save
                             </button>
                             <button
-                              className={styles.actionButton}
-                              onClick={() =>
-                                copyToClipboard(recognizedLatex, "latex")
-                              }
+                              className={styles.cancelButton}
+                              onClick={() => {
+                                setEditedLatex(recognizedLatex);
+                                setIsEditing(false);
+                              }}
                             >
-                              {copiedText === "latex" ? (
-                                <>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  >
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                  </svg>
-                                  Copied!
-                                </>
-                              ) : (
-                                <>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  >
-                                    <rect
-                                      x="9"
-                                      y="9"
-                                      width="13"
-                                      height="13"
-                                      rx="2"
-                                      ry="2"
-                                    ></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                  </svg>
-                                  Copy LaTeX
-                                </>
-                              )}
+                              Cancel
                             </button>
                           </div>
                         </div>
-                      </>
+                      ) : (
+                        <>
+                          <div className={styles.codeDisplay}>
+                            <pre className={styles.codeBlock}>
+                              {recognizedLatex}
+                            </pre>
+                            <div className={styles.codeActions}>
+                              <button
+                                className={styles.actionButton}
+                                onClick={startEditing}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                Edit
+                              </button>
+                              <button
+                                className={styles.actionButton}
+                                onClick={() =>
+                                  copyToClipboard(recognizedLatex, "latex")
+                                }
+                              >
+                                {copiedText === "latex" ? (
+                                  <>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    Copied!
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <rect
+                                        x="9"
+                                        y="9"
+                                        width="13"
+                                        height="13"
+                                        rx="2"
+                                        ry="2"
+                                      ></rect>
+                                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy LaTeX
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={styles.normalView}>
+                      <p className={styles.normalText}>
+                        {latexToNormalText(recognizedLatex)}
+                      </p>
+                      <button
+                        className={styles.copyButton}
+                        onClick={() =>
+                          copyToClipboard(
+                            latexToNormalText(recognizedLatex),
+                            "normal"
+                          )
+                        }
+                      >
+                        {copiedText === "normal" ? (
+                          <Check size={16} />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                        {copiedText === "normal" ? "Copied!" : "Copy Text"}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className={styles.renderedContainer}>
+                    {isRenderedEditing ? (
+                      <div className={styles.mathEditorContainer}>
+                        <MathQuillEditor
+                          value={editedLatex}
+                          onChange={handleMathEditorChange}
+                        />
+                        <div className={styles.mathEditingControls}>
+                          <button
+                            className={styles.saveButton}
+                            onClick={saveRenderedEdit}
+                          >
+                            <Save size={16} />
+                            Save
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={() => {
+                              setEditedLatex(recognizedLatex);
+                              setIsRenderedEditing(false);
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className={styles.mathDisplay}
+                        onClick={startRenderedEditing}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Click to edit math expression"
+                      >
+                        <MathJax>{"$$" + recognizedLatex + "$$"}</MathJax>
+                        <div className={styles.editOverlay}>
+                          <Edit size={16} />
+                          <span>Click to edit</span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                ) : (
-                  <div className={styles.normalView}>
-                    <p className={styles.normalText}>
-                      {latexToNormalText(recognizedLatex)}
-                    </p>
+
+                  <div className={styles.actionButtons}>
                     <button
-                      className={styles.copyButton}
-                      onClick={() =>
-                        copyToClipboard(
-                          latexToNormalText(recognizedLatex),
-                          "normal"
-                        )
-                      }
+                      className={styles.solveButton}
+                      onClick={solveExpression}
+                      disabled={!recognizedLatex || isProcessing}
                     >
-                      {copiedText === "normal" ? (
-                        <Check size={16} />
-                      ) : (
-                        <Copy size={16} />
-                      )}
-                      {copiedText === "normal" ? "Copied!" : "Copy Text"}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      Solve Expression
                     </button>
                   </div>
-                )}
-
-                <div className={styles.renderedContainer}>
-                  <div className={styles.mathDisplay}>
-                    <MathJax>{"$$" + recognizedLatex + "$$"}</MathJax>
-                  </div>
                 </div>
+              </section>
+            )}
 
-                <div className={styles.actionButtons}>
-                  <button
-                    className={styles.solveButton}
-                    onClick={solveExpression}
-                    disabled={!recognizedLatex || isProcessing}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    Solve Expression
-                  </button>
-
-                  {/* <button
-                    className={styles.downloadButton}
-                    onClick={() => {
-                      const blob = new Blob([recognizedLatex], {
-                        type: "text/plain",
-                      });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = "expression.tex";
-                      a.click();
-                    }}
-                  >
-                    <Download size={16} />
-                    Download LaTeX
-                  </button> */}
+            {isSolved && solution && !error && (
+              <section className={styles.solutionSection}>
+                <h2>Solution</h2>
+                <div className={styles.solutionContent}>
+                  <MathJax dynamic>{`$$${solution}$$`}</MathJax>
                 </div>
-              </div>
-            </section>
-          )}
-
-          {isSolved && solution && (
-            <section className={styles.solutionSection}>
-              <h2>Solution</h2>
-              <div className={styles.solutionContent}>
-                <pre className={styles.solutionSteps}>{solution}</pre>
-                {/* <button
-                  className={styles.copyButton}
-                  onClick={() => copyToClipboard(solution, "solution")}
-                >
-                  {copiedText === "solution" ? (
-                    <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect
-                          x="9"
-                          y="9"
-                          width="13"
-                          height="13"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                      Copy Solution
-                    </>
-                  )}
-                </button> */}
-              </div>
-            </section>
-          )}
-        </main>
-      </div>
-    </MathJaxContext>
+              </section>
+            )}
+          </main>
+        </div>
+      </MathJaxContext>
+    </>
   );
 }

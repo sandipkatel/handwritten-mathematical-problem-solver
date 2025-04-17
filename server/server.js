@@ -60,13 +60,15 @@ app.post("/api/convert", upload.single("image"), (req, res) => {
   // Handle script completion
   python.on("close", (code) => {
     if (code !== 0) {
-      console.error(`Python script exited with code ${code}`);
-      return res
-        .status(500)
-        .json({ error: "Failed to process image", details: errorOutput });
+      return res.status(500).json({ error: "Failed to process image", details: errorOutput });
     }
-
-    res.json({ latex: latexOutput.trim() });
+  
+    try {
+      const parsed = JSON.parse(latexOutput); // Parse JSON
+      res.json(parsed); // Returns: { latex: "..." }
+    } catch (err) {
+      res.status(500).json({ error: "Invalid JSON from Python", raw: latexOutput });
+    }
   });
 });
 
