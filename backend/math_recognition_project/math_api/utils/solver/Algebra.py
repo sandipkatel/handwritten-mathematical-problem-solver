@@ -1,7 +1,6 @@
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
-from IPython.display import Math, display
 from sympy.parsing.latex import parse_latex
 
 def is_system_of_linear_equations(latex_input):
@@ -18,6 +17,7 @@ def is_system_of_linear_equations(latex_input):
             if any(sp.degree(term, var) > 1 for term in [lhs - rhs] for var in (lhs - rhs).free_symbols):
                 return False
         
+        print(sp.latex(equations))
         return True
     except:
         return False
@@ -282,16 +282,16 @@ def plot_polynomial(expr, variable, roots=None, critical_points=None):
     plt.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
     
     # Show key information in a text box
-    info_text = ""
-    if roots:
-        info_text += f"Roots: {', '.join([str(root) for root in roots])}\n"
-    if critical_points:
-        info_text += f"Critical points: {', '.join([str(cp) for cp in critical_points])}"
+    # info_text = ""
+    # if roots:
+    #     info_text += f"Roots: {', '.join([str(root) for root in roots])}\n"
+    # if critical_points:
+    #     info_text += f"Critical points: {', '.join([str(cp) for cp in critical_points])}"
     
-    if info_text:
-        plt.figtext(0.5, 0.01, info_text, 
-                   ha="center", fontsize=9, 
-                   bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+    # if info_text:
+    #     plt.figtext(0.5, 0.01, info_text, 
+    #                ha="center", fontsize=9, 
+    #                bbox={"facecolor":"white", "alpha":0.5, "pad":5})
     
     plt.savefig("result.png", dpi=300, bbox_inches='tight')
     # plt.show()
@@ -317,7 +317,7 @@ def solve_system_of_equations(equations, variables=None):
     # Display the system
     # print("System of equations:")
     for i, eq in enumerate(eq_list):
-        display(Math(sp.latex(eq)))
+        print(sp.latex(eq))
     
     # If variables not provided, extract from equations
     if variables is None:
@@ -483,9 +483,9 @@ def plot_2d_system(equations, variables, solutions):
             solution_text += ", ".join([f"{var}={sol[var]}" for var in variables if var in sol])
             solution_text += "\n"
             
-        plt.figtext(0.5, 0.01, solution_text, 
-                   ha="center", fontsize=12, 
-                   bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+        # plt.figtext(0.5, 0.01, solution_text, 
+        #            ha="center", fontsize=12, 
+        #            bbox={"facecolor":"white", "alpha":0.5, "pad":5})
     
     plt.savefig("result.png", dpi=300, bbox_inches='tight')
     # plt.show()

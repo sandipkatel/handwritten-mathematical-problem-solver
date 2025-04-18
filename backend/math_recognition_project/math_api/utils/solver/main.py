@@ -32,6 +32,8 @@ def solve(latex_input):
             return solve_matrix(latex_input)
         # Handle System of Linear Equations
         elif is_system_of_linear_equations(latex_input):
+            print("System of Linear Equations Detected")
+            print(latex_input)
             return solve_system_of_equations(latex_input)
         # Handle Calculus
         elif isinstance(expr, sp.Derivative) or isinstance(expr, sp.Integral):

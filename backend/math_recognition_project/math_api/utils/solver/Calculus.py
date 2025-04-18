@@ -1,8 +1,30 @@
+import math
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import Math, display
 from sympy.parsing.latex import parse_latex
+from sympy import sympify, pi, E
+
+# Convert bounds to float for plotting
+def convert_bound_to_float(bound):
+    if isinstance(bound, (int, float, sp.Number)):
+        return float(bound)
+    
+    if isinstance(bound, (sp.Symbol, sp.Expr)):
+        replacements = {}
+        
+        symbols = list(bound.free_symbols)
+        for symbol in symbols:
+            if symbol.name == 'pi':
+                replacements[symbol] = sp.pi
+            elif symbol.name == 'e':
+                replacements[symbol] = sp.E
+        
+        if replacements:
+            bound = bound.subs(replacements)
+    
+    return float(bound.evalf())
 
 def solve_calculus(expr_latex):
     """
@@ -216,14 +238,14 @@ def handle_integration(expr):
         print(f"Definite integral from {lower_bound} to {upper_bound}:")
         print(f"∫({integrand}) d{integration_var} = {integral_result}")
         # print("\nOriginal expression:", integrand)
-        display(Math(sp.latex(integrand)))
+        # display(Math(sp.latex(integrand)))
         print(f"Indefinite integral: {indefinite_integral}")
-        display(Math(sp.latex(indefinite_integral)))
+        # display(Math(sp.latex(indefinite_integral)))
         print(f"Definite integral result from {lower_bound} to {upper_bound}: {integral_result}")
         # display(Math(r"\int_{" + sp.latex(lower_bound) + r"}^{" + sp.latex(upper_bound) + r"} " + 
         #             sp.latex(integrand) + r" \, d" + sp.latex(integration_var) + r" = " + 
         #             sp.latex(integral_result)))
-        result_print = r"\int_{" + sp.latex(lower_bound) + r"}^{" + sp.latex(upper_bound) + r"} " + sp.latex(integrand) + r" \, d" + sp.latex(integration_var) + r" = " + sp.latex(integral_result)
+        # result_print = r"\int_{" + sp.latex(lower_bound) + r"}^{" + sp.latex(upper_bound) + r"} " + sp.latex(integrand) + r" \, d" + sp.latex(integration_var) + r" = " + sp.latex(integral_result)
         
         # Plot the definite integral
         plot_definite_integral(integrand, indefinite_integral, integration_var, lower_bound, upper_bound, integral_result)
@@ -235,9 +257,8 @@ def handle_integration(expr):
             "lower_bound": sp.latex(lower_bound),
             "upper_bound": sp.latex(upper_bound),
             "indefinite_integral": sp.latex(indefinite_integral),
-            "solution": sp.latex(integral_result),
-            "result": result_print
-        }
+            "solution": sp.latex(integral_result)
+            }
         
     else:
         # For indefinite integrals
@@ -249,7 +270,7 @@ def handle_integration(expr):
         # display(Math(sp.latex(integrand)))
         print("Integration Result:", indefinite_integral)
         # display(Math(sp.latex(indefinite_integral)))
-        result_print = sp.latex(expr) +  r" = " + sp.latex(indefinite_integral) + r"C"
+        # result_print = sp.latex(expr) +  r" = " + sp.latex(indefinite_integral) + r"C"
 
         # Plot the indefinite integral
         plot_indefinite_integral(integrand, indefinite_integral, integration_var)
@@ -257,8 +278,7 @@ def handle_integration(expr):
             "original": sp.latex(expr),
             "type": "indefinite_integral",
             "variable": sp.latex(integration_var),
-            "solution": sp.latex(indefinite_integral),
-            "final_result": result_print
+            "solution": sp.latex(indefinite_integral)
         }
     return result
 
@@ -282,11 +302,11 @@ def handle_differentiation(expr):
     print("Differentiation:")
     if order == 1:
         print(f"d/d{diff_var}({function}) = {derivative_result}")
-        result_print = r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
+        # result_print = r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
         # display(Math(r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)))
     else:
         print(f"d^{order}/d{diff_var}^{order}({function}) = {derivative_result}")
-        result_print = r"\frac{d^{" + str(order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
+        # result_print = r"\frac{d^{" + str(order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
         # display(Math(r"\frac{d^{" + str(order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)))
     
     # Plot the function and its derivative
@@ -296,8 +316,7 @@ def handle_differentiation(expr):
         "type": "derivative",
         "variable": sp.latex(diff_var),
         "order": order,
-        "solution": sp.latex(derivative_result),
-        "final_result": result_print
+        "solution": sp.latex(derivative_result)
     }
 
     return result
@@ -328,9 +347,9 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
         # Calculate function values
         try:
             ys_fx = fx(xs)
-            ys_fx_int = fx_int(xs)
+            ys_fx_int = fx_int(xs)  
         except Exception as e:
-            # print(f"Error calculating function values: {e}")
+            print(f"Error calculating function values: {e}")
             return {
             "error": str(e),
             "original": sp.latex(function)
@@ -356,10 +375,10 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
         plt.grid(True, alpha=0.3)
         
         # Add formula in a text box
-        plt.figtext(0.5, 0.01, 
-                   f"$\\int {sp.latex(function)} \\, d{var} = {sp.latex(integral)} + C$", 
-                   ha="center", fontsize=12, 
-                   bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+        # plt.figtext(0.5, 0.01, 
+        #            f"$\\int {sp.latex(function)} \\, d{var} = {sp.latex(integral)} + C$", 
+        #            ha="center", fontsize=12, 
+        #            bbox={"facecolor":"white", "alpha":0.5, "pad":5})
         
         # Save and show plot
         plt.savefig("result.png", dpi=300, bbox_inches='tight')
@@ -375,9 +394,9 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
 def plot_definite_integral(function, indefinite, var, lower_bound, upper_bound, result):
     """Plot a function and visualize its definite integral"""
     try:
-        # Convert bounds to float for plotting
-        l_bound = float(lower_bound)
-        u_bound = float(upper_bound)
+        # Convert bounds to numerical values
+        l_bound = convert_bound_to_float(lower_bound)
+        u_bound = convert_bound_to_float(upper_bound)
         padding = (u_bound - l_bound) * 0.2
         x_min = l_bound - padding
         x_max = u_bound + padding
@@ -441,11 +460,11 @@ def plot_definite_integral(function, indefinite, var, lower_bound, upper_bound, 
         plt.legend(fontsize=10)
         plt.grid(True, alpha=0.3)
         
-        # Add formula in a text box
-        plt.figtext(0.5, 0.01, 
-                   f"$\\int_{{{sp.latex(lower_bound)}}}^{{{sp.latex(upper_bound)}}} {sp.latex(function)} \\, d{var} = {sp.latex(result)}$", 
-                   ha="center", fontsize=12, 
-                   bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+        # # Add formula in a text box
+        # plt.figtext(0.5, 0.01, 
+        #            f"$\\int_{{{sp.latex(lower_bound)}}}^{{{sp.latex(upper_bound)}}} {sp.latex(function)} \\, d{var} = {sp.latex(result)}$", 
+        #            ha="center", fontsize=12, 
+        #            bbox={"facecolor":"white", "alpha":0.5, "pad":5})
         
         # Save and show plot
         plt.savefig("result.png", dpi=300, bbox_inches='tight')
@@ -484,14 +503,14 @@ def plot_derivative(function, derivative, var, order=1, x_range=(-5, 5), num_poi
                 label=f"$f^{{{order}}}({var}) = {sp.latex(derivative)}$" if order > 1 else f"$f'({var}) = {sp.latex(derivative)}$")
         
         # Find critical points
-        critical_points = []
+        # critical_points = []
         try:
             critical_points_values = sp.solve(derivative, var)
             for point in critical_points_values:
                 try:
                     p_float = float(point)
                     if x_range[0] <= p_float <= x_range[1]:
-                        critical_points.append(p_float)
+                        # critical_points.append(p_float)
                         # Mark the critical point
                         plt.scatter([p_float], [fx(p_float)], color='red', zorder=5, s=50)
                         plt.text(p_float, fx(p_float), f"  ({p_float:.2f}, {fx(p_float):.2f})", 
@@ -518,35 +537,35 @@ def plot_derivative(function, derivative, var, order=1, x_range=(-5, 5), num_poi
             formula += f"^{order}"
         formula += r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative)
         
-        plt.figtext(0.5, 0.01, f"${formula}$", 
-                   ha="center", fontsize=12, 
-                   bbox={"facecolor":"white", "alpha":0.5, "pad":5})
+        # plt.figtext(0.5, 0.01, f"${formula}$", 
+        #            ha="center", fontsize=12, 
+        #            bbox={"facecolor":"white", "alpha":0.5, "pad":5})
         
         # Save and show plot
         plt.savefig("result.png", dpi=300, bbox_inches='tight')
         # plt.show()
         
         # If there are critical points, analyze them
-        if critical_points:
-            second_derivative = sp.diff(function, var, 2)
-            print("\nCritical Points Analysis:")
-            for point in critical_points:
-                try:
-                    second_deriv_value = float(second_derivative.subs(var, point))
-                    if second_deriv_value > 0:
-                        point_type = "Minimum"
-                    elif second_deriv_value < 0:
-                        point_type = "Maximum"
-                    else:
-                        point_type = "Inflection point or higher-order critical point"
+        # if critical_points:
+        #     second_derivative = sp.diff(function, var, 2)
+        #     print("\nCritical Points Analysis:")
+        #     for point in critical_points:
+        #         try:
+        #             second_deriv_value = float(second_derivative.subs(var, point))
+        #             if second_deriv_value > 0:
+        #                 point_type = "Minimum"
+        #             elif second_deriv_value < 0:
+        #                 point_type = "Maximum"
+        #             else:
+        #                 point_type = "Inflection point or higher-order critical point"
                     
-                    print(f"  {var} = {point:.4f}: {point_type} (f({point:.4f}) = {fx(point):.4f})")
-                except:
-                    print(f"  {var} = {point}: Could not classify")
-                    return {
-                    "error": str(e),
-                    "original": sp.latex(function)
-                }
+        #             print(f"  {var} = {point:.4f}: {point_type} (f({point:.4f}) = {fx(point):.4f})")
+        #         except:
+        #             print(f"  {var} = {point}: Could not classify")
+        #             return {
+        #             "error": str(e),
+        #             "original": sp.latex(function)
+        #         }
                 
     except Exception as e:
         print(f"Error in plotting derivative: {e}")
