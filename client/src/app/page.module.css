@@ -1048,23 +1048,174 @@
 
   .mathDisplay {
     padding: 1rem;
-    font-size: 1.1rem;
   }
-  .mathLiveField {
-    font-size: 1.1rem;
-  }
+}
+/* Add these styles to your existing page.module.css file */
 
-  .imageActionButton,
-  .processButton,
-  .solveButton,
-  .downloadButton {
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
-  }
-  .actionButton,
-  .copyButton,
-  .viewToggle button {
-    font-size: 0.8rem;
-    padding: 0.5rem 0.8rem;
-  }
+.mathDisplay {
+  position: relative;
+  padding: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  min-height: 60px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mathDisplay:hover {
+  background-color: #f0f0f0;
+}
+
+.mathDisplay:hover .editOverlay {
+  opacity: 1;
+}
+
+.editOverlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 12px;
+  color: #666;
+}
+
+.mathEditorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+}
+
+.mathLiveEditorWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mathLiveField {
+  min-height: 100px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 20px;
+}
+
+.mathLiveField .ML__fieldcontainer {
+  min-height: 60px;
+}
+
+.mathEditorToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+}
+
+.mathToolbarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.mathToolbarBtn:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.mathEditingControls {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+
+.saveButton,
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton {
+  background-color: #4a5568;
+  color: white;
+  border: none;
+}
+
+.saveButton:hover {
+  background-color: #2d3748;
+}
+
+.cancelButton {
+  background-color: transparent;
+  border: 1px solid #cbd5e0;
+  color: #4a5568;
+}
+
+.cancelButton:hover {
+  background-color: #f7fafc;
+}
+
+.plotContainer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.plotImage {
+  margin-top: 1rem;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* In page.module.css */
+
+.criticalPointsSection {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0; /* Adjust color as needed */
+}
+
+.criticalPointsSection h4 {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333; /* Adjust color */
+}
+
+.criticalPointsSection ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.criticalPointsSection li {
+  margin-bottom: 8px;
+  font-size: 0.95em;
 }

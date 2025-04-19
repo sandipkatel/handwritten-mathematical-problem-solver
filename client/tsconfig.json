@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/tailwig.config.js"
-  ],
+, "src/app/page.tsx"  ],
   "exclude": ["node_modules"]
 }

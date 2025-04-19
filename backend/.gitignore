@@ -47,6 +47,8 @@ next-env.d.ts
 # environment
 */venv
 venv
+*/.venv
+.venv
 *__pycache__
 
 # Models

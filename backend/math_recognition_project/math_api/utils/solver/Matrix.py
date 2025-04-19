@@ -62,5 +62,4 @@ def solve_matrix(latex_input):
     except Exception as e:
         print("Error in parsing or solving the matrix problem:", str(e))
 
-if __name__ == "__main__":
-    solve_latex_problem()
+

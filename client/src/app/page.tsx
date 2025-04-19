@@ -44,6 +44,11 @@ export default function HandwritingConverter() {
   const [isEditing, setIsEditing] = useState(false);
   const [isRenderedEditing, setIsRenderedEditing] = useState(false);
   const mathEditorRef = useRef<any>(null);
+  const [plotUrl, setPlotUrl] = useState<string | null>(null);
+  // In page.tsx, near other useState hooks
+  const [criticalPointsAnalysis, setCriticalPointsAnalysis] = useState<
+    any[] | null
+  >(null);
   const [crop, setCrop] = useState<Crop>({
     unit: "%",
     width: 100,
@@ -243,13 +248,16 @@ export default function HandwritingConverter() {
     }
   };
 
-  // Solve the recognized expression
+  // In page.tsx
+
   const solveExpression = async () => {
     if (!editedLatex) return;
 
     setIsSolved(false);
-    setError(null);
     setSolution(null);
+    setPlotUrl(null);
+    setError(null);
+    setCriticalPointsAnalysis(null); // Reset critical points state
 
     try {
       const response = await fetch("http://localhost:8080/api/solve/", {
@@ -262,15 +270,93 @@ export default function HandwritingConverter() {
 
       const result = await response.json();
 
+      console.log("Received Result:", JSON.stringify(result, null, 2));
       if (!response.ok || result.error) {
-        throw new Error(result.error || "Failed to solve the expression");
+        throw new Error(result.error || "Failed to calculate solution");
       }
 
-      setSolution(result.solution);
+      console.log("Solver Result:", result); // Log the result for debugging
+
+      let latexSolutions: string = "";
+      const resultType = result.type; // Get the type from the result
+
+      // --- Handle Different Result Types ---
+
+      if (resultType === "system_of_equations") {
+        // Existing logic for systems seems okay, maybe simplify formatting slightly
+        if (Array.isArray(result.solution) && result.solution.length > 0) {
+          latexSolutions = result.solution
+            .map((sol: any, i: number) => {
+              const parts = Object.entries(sol)
+                .map(([key, val]) => `${key} = ${String(val)}`) // Use variable name directly
+                .join(", \\enspace "); // Use space instead of comma if preferred
+              return `\\text{Set ${i + 1}}: \\{ ${parts} \\}`; // Format as a set
+            })
+            .join(" \\\\ ");
+        } else {
+          latexSolutions =
+            "\\text{No solution found or unique solution format differs.}"; // Handle no solution case
+          if (result.status) latexSolutions = `\\text{${result.status}}`;
+        }
+      } else if (
+        resultType === "linear_equation" ||
+        resultType === "polynomial_equation" ||
+        resultType === "polynomial_analysis"
+      ) {
+        // Handle single equations (linear or polynomial)
+        const variable = result.variable || "x"; // Default variable if missing
+        if (Array.isArray(result.solution) && result.solution.length > 0) {
+          if (result.solution.length === 1) {
+            latexSolutions = `${variable} = ${result.solution[0]}`;
+          } else {
+            // Join multiple solutions with commas
+            latexSolutions = `${variable} = ${result.solution.join(",\\ ")}`;
+          }
+        } else {
+          latexSolutions = "\\text{No solution found.}";
+        }
+        // Note: polynomial_analysis also returns roots in 'solution'
+      } else if (resultType === "derivative") {
+        latexSolutions = result.solution; // The main solution is the derivative itself
+        // Store the critical points analysis separately
+        if (result.critical_points_analysis) {
+          setCriticalPointsAnalysis(result.critical_points_analysis);
+        }
+        // Optionally include the final formatted string if desired
+        // latexSolutions = result.final_result || result.solution;
+      } else if (
+        resultType === "indefinite_integral" ||
+        resultType === "definite_integral"
+      ) {
+        latexSolutions = result.solution; // The main solution is the integral result
+        // Optionally include the final formatted string if desired
+        // latexSolutions = result.final_result || result.solution;
+        if (resultType === "indefinite_integral") latexSolutions += " + C"; // Add constant for indefinite
+      } else if (resultType === "matrix_operation") {
+        latexSolutions =
+          result.result_matrix ||
+          result.determinant ||
+          result.inverse_matrix ||
+          "\\text{Matrix result unavailable}";
+      } else if (resultType === "arithmetic_simplification") {
+        latexSolutions =
+          result.result || "\\text{Simplification result unavailable}";
+      }
+      // --- Fallback for unknown types or direct results ---
+      else {
+        // Use the 'solution' field if available, otherwise the whole result
+        latexSolutions = String(
+          result.solution ?? result.result ?? JSON.stringify(result)
+        );
+        console.warn("Unhandled result type or format:", result);
+      }
+
+      setSolution(latexSolutions);
+      setPlotUrl(result.plot_url || null);
       setIsSolved(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error solving expression:", error);
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setError(error.message || "Failed to solve the expression");
       setIsSolved(false); // Ensure isSolved is false on error
     }
   };
@@ -290,6 +376,7 @@ export default function HandwritingConverter() {
     setCopiedText(null);
     setIsEditing(false);
     setIsRenderedEditing(false);
+    setCriticalPointsAnalysis(null);
     setImageReady(false);
     setIsCropping(false);
     setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 });
@@ -798,31 +885,125 @@ export default function HandwritingConverter() {
               </section>
             )}
 
-            {/* Solution Section remains the same */}
-            {isSolved && solution && !error && (
+            {isSolved && (
               <section className={styles.solutionSection}>
                 <h2>Solution</h2>
                 <div className={styles.solutionContent}>
-                  {/* Consider adding copy for solution */}
-                  <MathJax dynamic>{`$$${solution}$$`}</MathJax>
-                  <button
-                    className={styles.copyButton} // Reuse or create specific style
-                    onClick={() => copyToClipboard(solution, "solution")}
-                    style={{ position: "absolute", top: "1rem", right: "1rem" }} // Adjust position
-                    aria-label="Copy solution LaTeX"
-                  >
-                    {copiedText === "solution" ? (
-                      <>
-                        {" "}
-                        <Check size={16} /> Copied!{" "}
-                      </>
-                    ) : (
-                      <>
-                        {" "}
-                        <Copy size={16} /> Copy Solution{" "}
-                      </>
+                  {solution ? (
+                    <MathJax dynamic>{"\\[" + solution + "\\]"}</MathJax>
+                  ) : (
+                    <p>No solution could be displayed.</p> // Changed message slightly
+                  )}
+
+                  {/* Display Critical Points Analysis if available */}
+
+                  {criticalPointsAnalysis &&
+                    criticalPointsAnalysis.length > 0 && (
+                      <div className={styles.criticalPointsSection}>
+                        <h4>Critical Points Analysis</h4>
+                        <ul>
+                          {criticalPointsAnalysis.map((point, index) => {
+                            // Only process points that are Maximum or Minimum
+                            if (
+                              point.type === "Maximum" ||
+                              point.type === "Minimum"
+                            ) {
+                              // --- Coordinate Checks ---
+                              const hasNumericX =
+                                typeof point.point_numeric === "number" &&
+                                !isNaN(point.point_numeric);
+                              const hasLatexX =
+                                point.point && point.point !== "N/A";
+                              const hasNumericY =
+                                typeof point.value_numeric === "number" &&
+                                !isNaN(point.value_numeric);
+                              const hasLatexY =
+                                point.value && point.value !== "N/A";
+
+                              // --- Formatted Numeric Values ---
+                              const numericXFormatted = hasNumericX
+                                ? point.point_numeric.toFixed(2)
+                                : "N/A";
+                              const numericYFormatted = hasNumericY
+                                ? point.value_numeric.toFixed(2)
+                                : "N/A";
+
+                              // --- Determine if BOTH approximations exist ---
+                              const showApproximation =
+                                hasNumericX && hasNumericY;
+
+                              return (
+                                <li key={index}>
+                                  {`${point.type} point: `}
+
+                                  {/* Render (LaTeX_X, LaTeX_Y) part */}
+                                  {`(`}
+                                  {hasLatexX ? (
+                                    <MathJax inline dynamic>
+                                      {`\\(${point.point}\\)`}
+                                    </MathJax>
+                                  ) : (
+                                    "?" // Placeholder if LaTeX X is missing
+                                  )}
+                                  {`, `}
+                                  {hasLatexY ? (
+                                    <MathJax inline dynamic>
+                                      {`\\(${point.value}\\)`}
+                                    </MathJax>
+                                  ) : (
+                                    "?" // Placeholder if LaTeX Y is missing
+                                  )}
+                                  {`)`}
+
+                                  {/* Render ≈ (Numeric_X, Numeric_Y) part IFF both numeric values exist */}
+                                  {showApproximation && (
+                                    <>
+                                      {` ≈ (`}
+                                      {numericXFormatted}
+                                      {`, `}
+                                      {numericYFormatted}
+                                      {`)`}
+                                    </>
+                                  )}
+                                </li>
+                              );
+                            }
+                            return null; // Don't render list items for other types
+                          })}
+                        </ul>
+                      </div>
                     )}
-                  </button>
+
+                  {/* Plot Rendering (existing code) */}
+                  {plotUrl && (
+                    <div className={styles.plotContainer}>
+                      <h3>Graph</h3>
+                      <img
+                        src={`http://localhost:8080/api/${plotUrl}?t=${Date.now()}`} // Add timestamp to prevent caching issues
+                        alt="Plot of the function/solution"
+                        className={styles.plotImage}
+                        onError={(e) => {
+                          console.error("Failed to load plot image");
+                          e.currentTarget.style.display = "none";
+                          // Add error message more robustly
+                          const errorMsgId = "plot-error-msg";
+                          let errorMessage =
+                            e.currentTarget.parentNode?.querySelector(
+                              `#${errorMsgId}`
+                            );
+                          if (!errorMessage) {
+                            errorMessage = document.createElement("p");
+                            errorMessage.id = errorMsgId;
+                            errorMessage.textContent =
+                              "Error loading graph. Please ensure the backend generated it correctly.";
+                            e.currentTarget.parentNode?.appendChild(
+                              errorMessage
+                            );
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </section>
             )}
