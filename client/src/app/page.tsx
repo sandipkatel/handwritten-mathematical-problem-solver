@@ -600,82 +600,101 @@ export default function HandwritingConverter() {
 
                   {/* Display Critical Points Analysis if available */}
 
-                  {criticalPointsAnalysis &&
-                    criticalPointsAnalysis.length > 0 && (
-                      <div className={styles.criticalPointsSection}>
-                        <h4>Critical Points Analysis</h4>
-                        <ul>
-                          {criticalPointsAnalysis.map((point, index) => {
-                            // Only process points that are Maximum or Minimum
-                            if (
-                              point.type === "Maximum" ||
-                              point.type === "Minimum"
-                            ) {
-                              // --- Coordinate Checks ---
-                              const hasNumericX =
-                                typeof point.point_numeric === "number" &&
-                                !isNaN(point.point_numeric);
-                              const hasLatexX =
-                                point.point && point.point !== "N/A";
-                              const hasNumericY =
-                                typeof point.value_numeric === "number" &&
-                                !isNaN(point.value_numeric);
-                              const hasLatexY =
-                                point.value && point.value !== "N/A";
+                  {criticalPointsAnalysis && criticalPointsAnalysis.length > 0 && (
+  <div className={styles.criticalPointsSection}>
+    <h4>Critical Points Analysis</h4>
+    {(() => { // Use an IIFE to manage conditional rendering logic
+      // Separate Min/Max points from others
+      const minMaxPoints = criticalPointsAnalysis.filter(
+        p => p.type === "Maximum" || p.type === "Minimum"
+      );
+      const otherPoints = criticalPointsAnalysis.filter(
+        p => p.type !== "Maximum" && p.type !== "Minimum"
+      );
 
-                              // --- Formatted Numeric Values ---
-                              const numericXFormatted = hasNumericX
-                                ? point.point_numeric.toFixed(2)
-                                : "N/A";
-                              const numericYFormatted = hasNumericY
-                                ? point.value_numeric.toFixed(2)
-                                : "N/A";
+      // --- Helper function to render coordinates ---
+      // Avoids repeating the coordinate rendering logic
+      const renderCoordinates = (point: any) => {
+        const hasNumericX = typeof point.point_numeric === 'number' && !isNaN(point.point_numeric);
+        const hasLatexX = point.point && point.point !== 'N/A';
+        const hasNumericY = typeof point.value_numeric === 'number' && !isNaN(point.value_numeric);
+        const hasLatexY = point.value && point.value !== 'N/A';
+        const numericXFormatted = hasNumericX ? point.point_numeric.toFixed(2) : '?';
+        const numericYFormatted = hasNumericY ? point.value_numeric.toFixed(2) : '?';
+        const showApproximationPart = hasNumericX || hasNumericY;
 
-                              // --- Determine if BOTH approximations exist ---
-                              const showApproximation =
-                                hasNumericX && hasNumericY;
+        return (
+          <>
+            {/* Render (LaTeX_X, LaTeX_Y) part */}
+            {`(`}
+            {hasLatexX ? (<MathJax inline dynamic>{`\\(${point.point}\\)`}</MathJax>) : ("?")}
+            {`, `}
+            {hasLatexY ? (<MathJax inline dynamic>{`\\(${point.value}\\)`}</MathJax>) : ("?")}
+            {`)`}
 
-                              return (
-                                <li key={index}>
-                                  {`${point.type} point: `}
+            {/* Render ≈ (Numeric_X, Numeric_Y) part */}
+            {showApproximationPart && (
+              <>
+                {` ≈ (`}
+                {numericXFormatted}
+                {`, `}
+                {numericYFormatted}
+                {`)`}
+              </>
+            )}
+          </>
+        );
+      };
 
-                                  {/* Render (LaTeX_X, LaTeX_Y) part */}
-                                  {`(`}
-                                  {hasLatexX ? (
-                                    <MathJax inline dynamic>
-                                      {`\\(${point.point}\\)`}
-                                    </MathJax>
-                                  ) : (
-                                    "?" // Placeholder if LaTeX X is missing
-                                  )}
-                                  {`, `}
-                                  {hasLatexY ? (
-                                    <MathJax inline dynamic>
-                                      {`\\(${point.value}\\)`}
-                                    </MathJax>
-                                  ) : (
-                                    "?" // Placeholder if LaTeX Y is missing
-                                  )}
-                                  {`)`}
 
-                                  {/* Render ≈ (Numeric_X, Numeric_Y) part IFF both numeric values exist */}
-                                  {showApproximation && (
-                                    <>
-                                      {` ≈ (`}
-                                      {numericXFormatted}
-                                      {`, `}
-                                      {numericYFormatted}
-                                      {`)`}
-                                    </>
-                                  )}
-                                </li>
-                              );
-                            }
-                            return null; // Don't render list items for other types
-                          })}
-                        </ul>
-                      </div>
-                    )}
+      // Render Min/Max points if any exist
+      const minMaxRendered = minMaxPoints.length > 0 ? (
+        <ul>
+          {minMaxPoints.map((point, index) => (
+            <li key={`minmax-${index}`}>
+              {`${point.type} point: `}
+              {renderCoordinates(point)} {/* Use helper function */}
+            </li>
+          ))}
+        </ul>
+      ) : null; // Render nothing if no Min/Max points
+
+
+      // Render "Other" points if any exist
+      const otherRendered = otherPoints.length > 0 ? (
+         // Add a small top margin if Min/Max points were also rendered
+        <div style={{ marginTop: minMaxRendered ? '15px' : '0' }}>
+           <p>Other critical points:</p>
+            <ul>
+              {otherPoints.map((point, index) => {
+                 const pointLabel = (point.type && point.type !== 'Unknown') ? `${point.type} at` : 'Critical point at';
+                 return (
+                    <li key={`other-${index}`}>
+                       {`${pointLabel} `}
+                       {renderCoordinates(point)} {/* Use helper function */}
+                    </li>
+                 );
+              })}
+           </ul>
+        </div>
+      ) : null; // Render nothing if no "Other" points
+
+
+      // Return the rendered sections (or a message if completely empty)
+      if (minMaxRendered || otherRendered) {
+        return (
+          <>
+            {minMaxRendered}
+            {otherRendered}
+          </>
+        );
+      } else {
+         return <p>No classified critical points found.</p>; // Fallback message
+      }
+
+    })()}
+  </div>
+)}
 
                   {/* Plot Rendering (existing code) */}
                   {plotUrl && (
