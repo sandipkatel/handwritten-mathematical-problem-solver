@@ -307,96 +307,133 @@ def handle_integration(expr):
 
 def handle_differentiation(expr):
     """Process and visualize a differentiation problem"""
-    # Extract information from the derivative
-    function = expr.expr
-    variables = expr.variables
+    try: # Add top-level try-except for this handler
+        function = expr.expr
+        variables = expr.variables
 
-    # Get the differentiation variable and order
-    if isinstance(variables[0], tuple):
-        diff_var, order = variables[0]
-    else:
-        diff_var = variables[0]
-        order = 1
+        if isinstance(variables[0], tuple):
+            diff_var, order = variables[0]
+        else:
+            diff_var = variables[0]
+            order = 1
 
-    # Compute the derivative
-    derivative_result = sp.diff(function, diff_var, order)
+        # Convert order to Python int for JSON serialization
+        py_order = int(order) # Assume order is always convertible
 
-    # Display results
-    print("Differentiation:")
-    if order == 1:
-        print(f"d/d{diff_var}({function}) = {derivative_result}")
-        result_print = r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(
-            function) + r"\right) = " + sp.latex(derivative_result)
-        # display(Math(r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)))
-    else:
-        print(f"d^{order}/d{diff_var}^{order}({function}) = {derivative_result}")
-        result_print = r"\frac{d^{" + str(order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(
-            order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
-        # display(Math(r"\frac{d^{" + str(order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)))
+        derivative_result = sp.diff(function, diff_var, py_order)
 
-    # Plot the function and its derivative
-    critical_points = plot_derivative(
-        function, derivative_result, diff_var, order)
-    critical_analysis = []
-    critical_analysis = []
-    if critical_points:
-        try:
-            # Use diff_var here
-            second_derivative = sp.diff(function, diff_var, 2)
-            has_second_derivative = True
-        except Exception as e_diff:
-            print(f"Could not compute second derivative: {e_diff}")
-            has_second_derivative = False
-
-        for point in critical_points:
-            point_analysis = {"point": sp.latex(
-                sp.sympify(point))}  # Start analysis entry
-            try:
-                # Use diff_var for substitution
-                point_expr = sp.sympify(point)
-                point_analysis["value"] = sp.latex(
-                    function.subs(diff_var, point_expr))
-
-                if has_second_derivative:
-                    # Use diff_var for substitution
-                    second_val_expr = second_derivative.subs(
-                        diff_var, point_expr)
-                    # Check if the result is numerical before converting to float
-                    if second_val_expr.is_Number:
-                        second_val = float(second_val_expr)
-                        if second_val > 1e-9:  # Add tolerance for float comparison
-                            kind = "Minimum"
-                        elif second_val < -1e-9:
-                            kind = "Maximum"
-                        else:
-                            # Could be inflection or test inconclusive
-                            # A more robust test (e.g., higher derivatives) might be needed
-                            kind = "Inflection/Other (2nd deriv=0)"
-                        point_analysis["type"] = kind
-                    else:
-                        point_analysis["type"] = "Non-numeric 2nd deriv"
-                else:
-                    point_analysis["type"] = "2nd deriv unavailable"
-
-            except Exception as e_inner:
-                print(f"Could not analyze critical point {point}: {e_inner}")
-                point_analysis["type"] = "Analysis Failed"
-                if "value" not in point_analysis:
-                    point_analysis["value"] = "N/A"
-
-            critical_analysis.append(point_analysis)
-
+        # --- Prepare result dictionary structure upfront ---
         result = {
             "original": sp.latex(expr),
             "type": "derivative",
             "variable": sp.latex(diff_var),
-            "order": order,
-            "solution": sp.latex(derivative_result),
-            "final_result": result_print,
-            "critical_points_analysis": critical_analysis  # Use the populated list
+            "order": py_order, # Use Python int
+            "solution": sp.latex(derivative_result), # The derivative itself is the main solution
+            "critical_points_analysis": [] # Initialize as empty list
+            # final_result and plot_url are added conditionally or later
         }
 
-        return result
+        # Create the formatted result string
+        if py_order == 1:
+            result_print = r"\frac{d}{d" + sp.latex(diff_var) + r"}\left(" + sp.latex(
+                function) + r"\right) = " + sp.latex(derivative_result)
+        else:
+            result_print = r"\frac{d^{" + str(py_order) + r"}}{d" + sp.latex(diff_var) + r"^{" + str(
+                py_order) + r"}}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative_result)
+        result["final_result"] = result_print
+
+        # --- Plotting and Critical Point Analysis ---
+        # plot_derivative should return the critical points found by solve
+        found_critical_points = plot_derivative(
+            function, derivative_result, diff_var, py_order
+        )
+
+        critical_analysis = [] # Renamed to avoid conflict
+        if found_critical_points: # Check if the list returned is not None and not empty
+            try:
+                second_derivative = sp.diff(function, diff_var, 2)
+                has_second_derivative = True
+            except Exception as e_diff:
+                print(f"Could not compute second derivative: {e_diff}")
+                has_second_derivative = False
+
+            for point in found_critical_points:
+                try:
+                    point_expr = sp.sympify(point)
+                except (sp.SympifyError, TypeError) as sympify_err:
+                    print(f"Could not sympify critical point {point}: {sympify_err}")
+                    continue
+
+                # Initialize analysis dict with LaTeX representations
+                point_analysis = {
+                    "point": sp.latex(point_expr),
+                    "point_numeric": None, # Placeholder for numeric value
+                    "value": "N/A",        # Default value LaTeX
+                    "value_numeric": None, # Placeholder for numeric value
+                    "type": "Unknown"      # Default type
+                }
+
+                try:
+                    # Attempt to get numeric value for the point (x-coordinate)
+                    try:
+                        point_numeric_val = float(point_expr.evalf())
+                        point_analysis["point_numeric"] = point_numeric_val
+                    except (AttributeError, TypeError, ValueError):
+                        # Cannot convert point to float directly
+                        pass # Keep point_numeric as None
+
+                    # Calculate value at critical point
+                    func_val_expr = function.subs(diff_var, point_expr)
+                    point_analysis["value"] = sp.latex(func_val_expr) # Store LaTeX value
+
+                    # Attempt to get numeric value for the function value (y-coordinate)
+                    try:
+                        value_numeric_val = float(func_val_expr.evalf())
+                        point_analysis["value_numeric"] = value_numeric_val
+                    except (AttributeError, TypeError, ValueError):
+                        # Cannot convert value to float directly
+                        pass # Keep value_numeric as None
+
+
+                    # Determine type (Minimum/Maximum/etc.) using second derivative test
+                    if has_second_derivative:
+                        second_val_expr = second_derivative.subs(diff_var, point_expr)
+                        if second_val_expr.is_Number:
+                            second_val = float(second_val_expr) # Use float for comparison
+                            if second_val > 1e-9: point_analysis["type"] = "Minimum"
+                            elif second_val < -1e-9: point_analysis["type"] = "Maximum"
+                            else: point_analysis["type"] = "Inflection/Other (2nd deriv=0)"
+                        elif second_val_expr.has(diff_var):
+                             point_analysis["type"] = f"Undetermined (2nd deriv: {sp.latex(second_val_expr)})"
+                        else:
+                             point_analysis["type"] = "Non-numeric 2nd deriv"
+                    else:
+                        point_analysis["type"] = "2nd deriv unavailable"
+
+                except Exception as e_inner:
+                    print(f"Could not fully analyze critical point {point}: {e_inner}")
+                    point_analysis["type"] = "Analysis Failed" # Overwrite type if analysis failed
+                    # Ensure value LaTeX is set even on error if possible
+                    if "value" not in point_analysis or point_analysis["value"] == "N/A":
+                         try: point_analysis["value"] = sp.latex(function.subs(diff_var, point_expr))
+                         except: point_analysis["value"] = "Error"
+
+
+                critical_analysis.append(point_analysis) # Add the completed analysis
+
+        # Add the analysis list to the main result dictionary
+        result["critical_points_analysis"] = critical_analysis
+
+        return result # Always return the dictionary
+
+    except Exception as e:
+         print(f"Error in handle_differentiation: {e}")
+         # Return an error dictionary consistent with other handlers
+         return {
+            "error": f"Failed during differentiation process: {e}",
+            "original": expr, # Use original input latex
+            "type": "derivative_error" # Indicate error type
+         }
 
 
 def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_points=1000):
@@ -558,107 +595,87 @@ def plot_definite_integral(function, indefinite, var, lower_bound, upper_bound, 
 
 
 def plot_derivative(function, derivative, var, order=1, x_range=(-5, 5), num_points=1000):
-    """Plot a function and its derivative"""
+    """Plot a function and its derivative. Returns list of critical points found."""
+    found_critical_points = [] # Initialize list to store points found by solve
     try:
         xs = np.linspace(x_range[0], x_range[1], num_points)
 
         # Convert sympy expressions to numpy functions
-        fx = sp.lambdify(var, function, 'numpy')
-        dfx = sp.lambdify(var, derivative, 'numpy')
+        try:
+            fx = sp.lambdify(var, function, 'numpy')
+            dfx = sp.lambdify(var, derivative, 'numpy')
+        except Exception as lambdify_error:
+            print(f"Error creating numpy function for plotting: {lambdify_error}")
+            # Return empty list or raise error? Returning empty for now.
+            return found_critical_points # Return empty list on lambdify error
 
         # Calculate function values
-        ys_fx = fx(xs)
-        ys_dfx = dfx(xs)
-
-        # Plot function and its derivative
-        plt.figure(figsize=(10, 6))
-
-        # Plot original function
-        plt.plot(xs, ys_fx, color="#1C3041", linewidth=2,
-                 label=f"$f({var}) = {sp.latex(function)}$")
-
-        # Plot derivative
-        plt.plot(xs, ys_dfx, color="#D14124", linewidth=2,
-                 linestyle='dashed',
-                 label=f"$f^{{{order}}}({var}) = {sp.latex(derivative)}$" if order > 1 else f"$f'({var}) = {sp.latex(derivative)}$")
-
-        # Find critical points
-        critical_points = []
         try:
-            critical_points_ = sp.solve(derivative, var)
-            for point in critical_points:
+            ys_fx = fx(xs)
+            ys_dfx = dfx(xs)
+        except Exception as eval_error:
+             print(f"Error evaluating function for plotting: {eval_error}")
+             # Return empty list or raise error? Returning empty for now.
+             return found_critical_points # Return empty list on evaluation error
+
+        # Create plot
+        plt.figure(figsize=(10, 6))
+        plt.plot(xs, ys_fx, color="#1C3041", linewidth=2, label=f"$f({var}) = {sp.latex(function)}$")
+        derivative_label = f"$f^{{{order}}}({var}) = {sp.latex(derivative)}$" if order > 1 else f"$f'({var}) = {sp.latex(derivative)}$"
+        plt.plot(xs, ys_dfx, color="#D14124", linewidth=2, linestyle='dashed', label=derivative_label)
+
+        # Find critical points using SymPy solve
+        try:
+            # Solve the derivative equation
+            critical_points_sympy = sp.solve(derivative, var)
+            found_critical_points = list(critical_points_sympy) # Store the sympy results
+
+            # Iterate through SYMPY points to plot numerical ones within range
+            for point_expr in critical_points_sympy:
                 try:
-                    p_float = float(point)
+                    # Attempt to evaluate to float for plotting
+                    p_float = float(point_expr.evalf())
                     if x_range[0] <= p_float <= x_range[1]:
-                        # critical_points.append(p_float)
-                        # Mark the critical point
-                        plt.scatter([p_float], [fx(p_float)],
-                                    color='red', zorder=5, s=50)
-                        plt.text(p_float, fx(p_float), f"  ({p_float:.2f}, {fx(p_float):.2f})",
-                                 verticalalignment='top')
-                except:
+                        y_val = float(function.subs(var, point_expr).evalf()) # Evaluate function value
+                        plt.scatter([p_float], [y_val], color='red', zorder=5, s=50)
+                        plt.text(p_float, y_val, f"  ({p_float:.2f}, {y_val:.2f})", verticalalignment='top')
+                except (TypeError, AttributeError, ValueError) as plot_err:
+                    # Could not convert point/value to float (e.g., symbolic, complex) - skip plotting this one
+                    print(f"Could not plot critical point {point_expr}: {plot_err}")
                     pass
-        except:
-            pass
+        except NotImplementedError:
+             print(f"Sympy solve could not solve derivative equation: {derivative} = 0")
+        except Exception as solve_err:
+            print(f"Error solving for critical points: {solve_err}")
+
 
         # Add labels and title
-        plt.xlabel(f"${var}$", fontsize=12)
+        plt.xlabel(f"${sp.latex(var)}$", fontsize=12) # Use latex for var symbol
         plt.ylabel("$y$", fontsize=12)
-        derivative_order = f"^{order}" if order > 1 else "'"
-        plt.title(
-            f"Function $f({var})$ and its Derivative $f{derivative_order}({var})$", fontsize=14)
+        derivative_order_sym = f"^{{{order}}}" if order > 1 else "'"
+        plt.title(f"Function $f({sp.latex(var)})$ and its Derivative $f{derivative_order_sym}({sp.latex(var)})$", fontsize=14)
         plt.legend(fontsize=10)
         plt.grid(True, alpha=0.3)
 
-        # Add formula in a text box
+        # Add formula text box
         formula = r"\frac{d"
-        if order > 1:
-            formula += f"^{order}"
+        if order > 1: formula += f"^{{{order}}}"
         formula += r"}{d" + sp.latex(var)
-        if order > 1:
-            formula += f"^{order}"
-        formula += r"}\left(" + sp.latex(function) + \
-            r"\right) = " + sp.latex(derivative)
+        if order > 1: formula += f"^{{{order}}}"
+        formula += r"}\left(" + sp.latex(function) + r"\right) = " + sp.latex(derivative)
+        plt.figtext(0.5, 0.01, f"${formula}$", ha="center", fontsize=12, bbox={"facecolor": "white", "alpha": 0.5, "pad": 5})
 
-        plt.figtext(0.5, 0.01, f"${formula}$",
-                    ha="center", fontsize=12,
-                    bbox={"facecolor": "white", "alpha": 0.5, "pad": 5})
-
-        # Save and show plot
+        # Save plot
         plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-        # plt.show()
+        # plt.close() # Close the plot figure to free memory if running many times
 
-        # If there are critical points, analyze them
-        if critical_points:
-            second_derivative = sp.diff(function, var, 2)
-            print("\nCritical Points Analysis:")
-            for point in critical_points:
-                try:
-                    second_deriv_value = float(
-                        second_derivative.subs(var, point))
-                    if second_deriv_value > 0:
-                        point_type = "Minimum"
-                    elif second_deriv_value < 0:
-                        point_type = "Maximum"
-                    else:
-                        point_type = "Inflection point or higher-order critical point"
+        # Return the list of SYMPY critical points found by solve
+        return found_critical_points
 
-                    print(
-                        f"  {var} = {point:.4f}: {point_type} (f({point:.4f}) = {fx(point):.4f})")
-                except:
-                    print(f"  {var} = {point}: Could not classify")
-                    return {
-                        "error": str(e),
-                        "original": sp.latex(function)
-                    }
-            return critical_points
-        return None
     except Exception as e:
-        print(f"Error in plotting derivative: {e}")
-        return {
-            "error": str(e),
-            "original": sp.latex(function)
-        }
+        print(f"Error occurred during plot_derivative: {e}")
+        # Return empty list in case of plotting error
+        return found_critical_points # Return any points found before the error
 
 
 # Example usage for derivatives:

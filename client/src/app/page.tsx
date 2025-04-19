@@ -606,64 +606,68 @@ export default function HandwritingConverter() {
                         <h4>Critical Points Analysis</h4>
                         <ul>
                           {criticalPointsAnalysis.map((point, index) => {
-                            // Check if the point type is Maximum or Minimum
+                            // Only process points that are Maximum or Minimum
                             if (
                               point.type === "Maximum" ||
                               point.type === "Minimum"
                             ) {
-                              let xCoord: React.ReactNode = point.point; // Default to original LaTeX
-                              let yCoord: React.ReactNode = point.value; // Default to original LaTeX
+                              // --- Coordinate Checks ---
+                              const hasNumericX =
+                                typeof point.point_numeric === "number" &&
+                                !isNaN(point.point_numeric);
+                              const hasLatexX =
+                                point.point && point.point !== "N/A";
+                              const hasNumericY =
+                                typeof point.value_numeric === "number" &&
+                                !isNaN(point.value_numeric);
+                              const hasLatexY =
+                                point.value && point.value !== "N/A";
 
-                              // Try to parse and round the x-coordinate (point)
-                              if (point.point) {
-                                // Check if point.point exists
-                                const xNum = parseFloat(point.point);
-                                if (!isNaN(xNum)) {
-                                  // Check if parsing was successful
-                                  xCoord = xNum.toFixed(2); // Round to 2 decimal places
-                                } else {
-                                  // If parsing failed, wrap original LaTeX in MathJax
-                                  xCoord = (
-                                    <MathJax inline dynamic>
-                                      {point.point}
-                                    </MathJax>
-                                  );
-                                }
-                              } else {
-                                xCoord = "N/A"; // Handle null/undefined case
-                              }
+                              // --- Formatted Numeric Values ---
+                              const numericXFormatted = hasNumericX
+                                ? point.point_numeric.toFixed(2)
+                                : "N/A";
+                              const numericYFormatted = hasNumericY
+                                ? point.value_numeric.toFixed(2)
+                                : "N/A";
 
-                              // Try to parse and round the y-coordinate (value)
-                              if (point.value) {
-                                // Check if point.value exists
-                                const yNum = parseFloat(point.value);
-                                if (!isNaN(yNum)) {
-                                  // Check if parsing was successful
-                                  yCoord = yNum.toFixed(2); // Round to 2 decimal places
-                                } else {
-                                  // If parsing failed, wrap original LaTeX in MathJax
-                                  yCoord = (
-                                    <MathJax inline dynamic>
-                                      {point.value}
-                                    </MathJax>
-                                  );
-                                }
-                              } else {
-                                yCoord = "N/A"; // Handle null/undefined case
-                              }
+                              // --- Determine if BOTH approximations exist ---
+                              const showApproximation =
+                                hasNumericX && hasNumericY;
 
                               return (
                                 <li key={index}>
-                                  {/* Display "Maximum point" or "Minimum point" */}
-                                  {`${point.type} point: (`}
-                                  {/* Render the potentially rounded x-coordinate */}
-                                  {xCoord}
-                                  {/* Add comma and space */}
-                                  {", "}
-                                  {/* Render the potentially rounded y-coordinate */}
-                                  {yCoord}
-                                  {/* Closing parenthesis */}
+                                  {`${point.type} point: `}
+
+                                  {/* Render (LaTeX_X, LaTeX_Y) part */}
+                                  {`(`}
+                                  {hasLatexX ? (
+                                    <MathJax inline dynamic>
+                                      {`\\(${point.point}\\)`}
+                                    </MathJax>
+                                  ) : (
+                                    "?" // Placeholder if LaTeX X is missing
+                                  )}
+                                  {`, `}
+                                  {hasLatexY ? (
+                                    <MathJax inline dynamic>
+                                      {`\\(${point.value}\\)`}
+                                    </MathJax>
+                                  ) : (
+                                    "?" // Placeholder if LaTeX Y is missing
+                                  )}
                                   {`)`}
+
+                                  {/* Render ≈ (Numeric_X, Numeric_Y) part IFF both numeric values exist */}
+                                  {showApproximation && (
+                                    <>
+                                      {` ≈ (`}
+                                      {numericXFormatted}
+                                      {`, `}
+                                      {numericYFormatted}
+                                      {`)`}
+                                    </>
+                                  )}
                                 </li>
                               );
                             }
