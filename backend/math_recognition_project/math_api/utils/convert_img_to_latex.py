@@ -14,31 +14,32 @@ def convert_image_to_latex(image_path):
     """
     # Uncomment this section when you're ready to use your actual model
 
-    current_dir = os.path.dirname(__file__)
-    model_dir = os.path.join(
-        current_dir, '../../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
+    # current_dir = os.path.dirname(__file__)
+    # model_dir = os.path.join(
+    #     current_dir, '../../../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
 
-    # Load the processor and model
-    processor = TrOCRProcessor.from_pretrained(
-        "microsoft/trocr-base-handwritten")
-    model = VisionEncoderDecoderModel.from_pretrained(model_dir)
+    # # Load the processor and model
+    # processor = TrOCRProcessor.from_pretrained(
+    #     "microsoft/trocr-base-handwritten")
+    # model = VisionEncoderDecoderModel.from_pretrained(model_dir)
 
-    # Use CUDA if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
+    # # Use CUDA if available
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model.to(device)
 
-    # Load and preprocess the image
-    img = Image.open(image_path).convert("RGB")
-    img = ImageEnhance.Sharpness(img).enhance(2.0)
-    pixel_values = processor(img, return_tensors="pt").pixel_values.to(device)
+    # # Load and preprocess the image
+    # img = Image.open(image_path).convert("RGB")
+    # img = ImageEnhance.Sharpness(img).enhance(2.0)
+    # pixel_values = processor(img, return_tensors="pt").pixel_values.to(device)
 
-    # Generate LaTeX text
-    generated_ids = model.generate(pixel_values)
-    generated_text = processor.batch_decode(
-        generated_ids, skip_special_tokens=True)[0]
+    # # Generate LaTeX text
+    # generated_ids = model.generate(pixel_values)
+    # generated_text = processor.batch_decode(
+    #     generated_ids, skip_special_tokens=True)[0]
 
     # For testing only - replace with your actual model inference
-    # generated_text = ' \\frac {d } { d x } ( \\sin ^ { 3 } x )'
+    generated_text = '5x^3 + 4 = 0'
+    print(generated_text)
     return {"latex": generated_text}
 
 

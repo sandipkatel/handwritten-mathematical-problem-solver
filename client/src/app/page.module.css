@@ -638,7 +638,8 @@
   justify-content: flex-end;
 }
 
-.saveButton, .cancelButton {
+.saveButton,
+.cancelButton {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -667,4 +668,40 @@
 
 .cancelButton:hover {
   background-color: #f7fafc;
+}
+
+.plotContainer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.plotImage {
+  margin-top: 1rem;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* In page.module.css */
+
+.criticalPointsSection {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0; /* Adjust color as needed */
+}
+
+.criticalPointsSection h4 {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333; /* Adjust color */
+}
+
+.criticalPointsSection ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.criticalPointsSection li {
+  margin-bottom: 8px;
+  font-size: 0.95em;
 }
