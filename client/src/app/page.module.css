@@ -1,7 +1,11 @@
+/* page.module.css */
+
+/* --- Base Layout & Hero --- */
 .pageContainer {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 .hero {
@@ -26,6 +30,7 @@
   max-width: 700px;
   margin: 0 auto;
   opacity: 0.9;
+  color: white;
 }
 
 .mainContent {
@@ -34,7 +39,7 @@
   gap: 2rem;
 }
 
-/* Upload Section */
+/* --- Upload Section --- */
 .uploadSection {
   background-color: white;
   border-radius: 12px;
@@ -55,6 +60,7 @@
   transition: all 0.3s ease;
   min-height: 300px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -72,6 +78,7 @@
   align-items: center;
   padding: 2rem;
   text-align: center;
+  width: 100%;
 }
 
 .uploadIcon {
@@ -92,7 +99,7 @@
 }
 
 .uploadButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background-color: var(--primary);
@@ -114,12 +121,32 @@
   display: none;
 }
 
-.previewContainer {
+/* --- Image Preview, Cropping & Actions --- */
+.previewWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
+  padding: 1rem 0 0 0;
+}
+
+.imageDisplayArea {
+  max-width: 100%;
+  width: 100%;
+  margin-bottom: 1.5rem;
   position: relative;
+  min-height: 200px;
   display: flex;
   justify-content: center;
-  padding: 1rem;
+  align-items: center;
+}
+
+.imageDisplayArea img {
+  display: block;
+  max-width: 100%;
+  max-height: 450px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .previewImage {
@@ -130,30 +157,115 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.resetButton {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+.imageActionsBelow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.imageControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.cropControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Base Style for secondary/action buttons */
+.imageActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: white;
   color: var(--foreground);
-  border: none;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
+  padding: 0.6rem 1.2rem;
   font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  white-space: nowrap;
 }
-
-.resetButton:hover {
+.imageActionButton:hover {
   background-color: #f3f4f6;
-  color: var(--primary);
+  border-color: #d1d5db;
 }
 
+/* Button to INITIATE cropping */
+.cropButton {
+  composes: imageActionButton; /* OK: Single class composition */
+}
+
+/* Button to APPLY crop */
+.applyButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--success, #10b981);
+  border-color: var(--success, #10b981);
+  color: white;
+}
+.applyButton:hover {
+  background-color: var(--success-dark, #059669);
+  border-color: var(--success-dark, #059669);
+}
+
+/* Button to CANCEL cropping */
+.cancelButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--error, #ef4444);
+  border-color: var(--error, #ef4444);
+  color: white;
+}
+.cancelButton:hover {
+  background-color: var(--error-dark, #dc2626);
+  border-color: var(--error-dark, #dc2626);
+}
+
+/* Button to reset image */
+.resetButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  position: static; /* Ensure it's not absolute here */
+  background-color: #6b7280;
+  border-color: #6b7280;
+  color: white;
+}
+.resetButton:hover {
+  background-color: #4b5563;
+  border-color: #4b5563;
+}
+/* Styling specifically when .resetButton is inside .imageControls */
+/* No need for composes here, just apply the class in React */
+.imageControls .resetButton {
+  /* Add specific overrides if needed, but base style comes from .resetButton */
+}
+
+/* Button to PROCESS Image */
+.processButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+.processButton:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* --- Processing Indicator & Error --- */
 .processingIndicator {
   display: flex;
   align-items: center;
@@ -181,16 +293,20 @@
   }
 }
 
+.spinningIcon {
+  animation: spin 1.5s linear infinite;
+}
+
 .errorMessage {
   background-color: #fee2e2;
-  border-left: 4px solid var(--error);
+  border-left: 4px solid var(--error, #ef4444);
   color: #b91c1c;
   padding: 1rem;
   border-radius: 8px;
   margin-top: 1.5rem;
 }
 
-/* Result Section */
+/* --- Result Section --- */
 .resultSection {
   background-color: white;
   border-radius: 12px;
@@ -200,17 +316,55 @@
 
 .resultSection h2 {
   font-size: 1.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   color: var(--foreground);
 }
 
-.latexContainer,
-.renderedContainer {
+.recognizedHeader {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.viewToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 
-.latexContainer h3,
-.renderedContainer h3 {
+.viewToggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  background-color: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.viewToggle button:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.viewToggle button.activeToggle {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* --- LaTeX Display & Edit --- */
+.latexContainer {
+  margin-bottom: 1.5rem;
+}
+
+.latexContainer h3 {
   font-size: 1.25rem;
   margin-bottom: 1rem;
   color: var(--foreground);
@@ -220,15 +374,14 @@
   position: relative;
   background-color: #f9fafb;
   border-radius: 8px;
+  border: 1px solid #f3f4f6;
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
 .codeBlock {
   font-family: "Menlo", "Monaco", "Courier New", monospace;
-  background-color: #f3f4f6;
-  padding: 1rem;
-  border-radius: 8px;
+  background-color: transparent;
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
@@ -240,10 +393,12 @@
 .codeActions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 1rem;
-  justify-content: flex-end;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
 }
 
+/* Base action button style */
 .actionButton {
   display: flex;
   align-items: center;
@@ -258,8 +413,30 @@
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .actionButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* Apply styles directly to copy button within codeActions */
+/* REMOVED composes: actionButton from nested selector */
+.codeActions .copyButton {
+  /* Apply styles copied from actionButton */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  /* Override padding */
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.codeActions .copyButton:hover {
   background-color: #f3f4f6;
   border-color: #d1d5db;
 }
@@ -282,9 +459,15 @@
   background-color: white;
   color: var(--foreground);
 }
+.editTextarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light-focus-ring, rgba(99, 102, 241, 0.2));
+}
 
+/* Base Save Button Style */
 .saveButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   background-color: var(--primary);
@@ -296,281 +479,137 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-  align-self: flex-end;
 }
-
 .saveButton:hover {
   background-color: var(--primary-dark);
 }
 
+/* Apply alignment only when .saveButton is in .editContainer */
+/* REMOVED composes: saveButton (was composing itself) */
+.editContainer .saveButton {
+  align-self: flex-end;
+}
+
+/* Apply styles directly when .cancelButton is in .editContainer */
+/* REMOVED composes: actionButton from nested selector */
+.editContainer .cancelButton {
+  /* Apply styles copied from actionButton */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  /* Add specific alignment */
+  align-self: flex-end;
+}
+.editContainer .cancelButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* --- Normal Text View --- */
+.normalView {
+  padding: 1rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.normalText {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--foreground);
+}
+
+/* Base Copy Button Style (if different from actionButton) */
+.copyButton {
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem; /* Specific padding */
+  font-size: 0.75rem; /* Specific font size */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.copyButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* Position copy button when inside .normalView */
+/* REMOVED composes: copyButton (was composing itself) */
+.normalView .copyButton {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  /* Base styles are applied by the .copyButton class itself */
+}
+
+/* --- Rendered Math Display & Editor --- */
+.renderedContainer {
+  margin-bottom: 1.5rem;
+}
+
+.renderedContainer h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
 .mathDisplay {
   background-color: white;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100px;
-  font-size: 1.5rem;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.solveButton {
-  flex: 1;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.solveButton:hover {
-  background-color: var(--primary-dark);
-}
-
-.solveButton:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-.downloadButton {
-  background-color: white;
-  color: var(--foreground);
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.downloadButton:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
-}
-
-/* Solution Section */
-.solutionSection {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  padding: 2rem;
-  margin-top: 1rem;
-  border-left: 4px solid var(--success);
-}
-
-.solutionSection h2 {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.solutionContent {
+  font-size: 1.2rem;
   position: relative;
-}
-
-.solutionSteps {
-  font-family: "Menlo", "Monaco", "Courier New", monospace;
-  white-space: pre-wrap;
-  background-color: #f9fafb;
-  padding: 1.5rem;
-  border-radius: 8px;
-  color: var(--foreground);
-  line-height: 1.7;
-  margin: 0;
-}
-
-.copyButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background-color: white;
-  color: var(--foreground);
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease;
+  overflow-x: auto;
 }
-
-.copyButton:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
-}
-
-/* Features Section */
-.features {
-  margin-top: 3rem;
-  padding: 3rem 0;
-  text-align: center;
-}
-
-.features h2 {
-  font-size: 2rem;
-  margin-bottom: 2.5rem;
-  color: var(--foreground);
-}
-
-.featureGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.featureCard {
-  background-color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.featureCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.featureIcon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1.5rem;
-  background-color: #f0f9ff;
-  color: var(--primary);
-  border-radius: 50%;
-}
-
-.featureCard h3 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  color: var(--foreground);
-}
-
-.featureCard p {
-  color: #6b7280;
-  line-height: 1.6;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero {
-    padding: 2rem 1rem;
-  }
-
-  .hero h1 {
-    font-size: 2rem;
-  }
-
-  .hero p {
-    font-size: 1.1rem;
-  }
-
-  .uploadSection,
-  .resultSection,
-  .solutionSection {
-    padding: 1.5rem;
-  }
-
-  .actionButtons {
-    flex-direction: column;
-  }
-
-  .featureGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero h1 {
-    font-size: 1.75rem;
-  }
-
-  .hero p {
-    font-size: 1rem;
-  }
-
-  .uploadSection h2,
-  .resultSection h2,
-  .solutionSection h2,
-  .features h2 {
-    font-size: 1.5rem;
-  }
-
-  .dropZone {
-    min-height: 200px;
-  }
-
-  .uploadPrompt h3 {
-    font-size: 1.25rem;
-  }
-
-  .mathDisplay {
-    padding: 1rem;
-  }
-}
-/* Add these styles to your existing page.module.css file */
-
-.mathDisplay {
-  position: relative;
-  padding: 1.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  min-height: 60px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
 .mathDisplay:hover {
-  background-color: #f0f0f0;
-}
-
-.mathDisplay:hover .editOverlay {
-  opacity: 1;
+  background-color: #f3f4f6;
 }
 
 .editOverlay {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 4px 8px;
-  border-radius: 4px;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #4b5563;
+  padding: 5px 10px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   opacity: 0;
-  transition: opacity 0.2s ease;
-  font-size: 12px;
-  color: #666;
+  transition: opacity 0.25s ease-in-out;
+  font-size: 0.8rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+.mathDisplay:hover .editOverlay {
+  opacity: 1;
 }
 
 .mathEditorContainer {
@@ -596,7 +635,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background-color: #fff;
-  font-size: 20px;
+  font-size: 1.2rem;
 }
 
 .mathLiveField .ML__fieldcontainer {
@@ -625,7 +664,6 @@
   font-size: 18px;
   transition: all 0.2s ease;
 }
-
 .mathToolbarBtn:hover {
   background-color: #f0f0f0;
   border-color: #ccc;
@@ -633,38 +671,400 @@
 
 .mathEditingControls {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 0.75rem;
+  margin-top: 1rem;
   justify-content: flex-end;
 }
 
-.saveButton, .cancelButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* Style save button when in mathEditingControls */
+/* REMOVED composes: saveButton (was composing itself) */
+.mathEditingControls .saveButton {
+  /* Base styles applied by .saveButton class */
 }
 
-.saveButton {
-  background-color: #4a5568;
+/* Style cancel button when in mathEditingControls */
+/* REMOVED composes: imageActionButton from nested selector */
+.mathEditingControls .cancelButton {
+  /* Apply styles copied from imageActionButton */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.mathEditingControls .cancelButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* --- Action Buttons (Solve/Download) --- */
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.solveButton {
+  flex: 1 1 auto;
+  min-width: 150px;
+  background-color: var(--primary);
   color: white;
   border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.solveButton:hover {
+  background-color: var(--primary-dark);
 }
 
-.saveButton:hover {
-  background-color: #2d3748;
+.downloadButton {
+  flex: 1 1 auto;
+  min-width: 150px;
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.downloadButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
 }
 
-.cancelButton {
-  background-color: transparent;
-  border: 1px solid #cbd5e0;
-  color: #4a5568;
+/* --- Solution Section --- */
+.solutionSection {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin-top: 1rem;
+  border-left: 4px solid var(--success, #10b981);
 }
 
-.cancelButton:hover {
-  background-color: #f7fafc;
+.solutionSection h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.solutionContent {
+  position: relative;
+  padding: 1rem 0 0 0;
+  min-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  overflow-x: auto;
+}
+
+/* Position copy button within solutionContent */
+.solutionContent .copyButton {
+  position: absolute;
+  top: 1rem;
+  right: 0rem; /* Relative to padding */
+  z-index: 1;
+  /* Base styles are applied by the .copyButton class itself */
+}
+
+/* --- Features Section --- */
+.features {
+  margin-top: 3rem;
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 2rem;
+  margin-bottom: 2.5rem;
+  color: var(--foreground);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.featureCard {
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: left;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.featureIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1.5rem;
+  background-color: var(--primary-light-bg, #e0e7ff);
+  color: var(--primary);
+  border-radius: 50%;
+}
+
+.featureCard h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  text-align: center;
+}
+
+.featureCard p {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* --- Plot & Critical Points --- */
+.plotContainer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+.plotContainer h4 {
+  font-size: 1.1rem;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+}
+
+.plotImage {
+  margin-top: 1rem;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.criticalPointsSection {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.criticalPointsSection h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--foreground);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.criticalPointsSection ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.criticalPointsSection li {
+  margin-bottom: 8px;
+  font-size: 0.95em;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+/* --- Disabled Button State --- */
+:is(
+    .processButton,
+    .solveButton,
+    .applyButton,
+    .cropButton,
+    .resetButton,
+    .saveButton,
+    .actionButton,
+    .copyButton,
+    .downloadButton,
+    .cancelButton
+  ):disabled {
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+:is(
+    .processButton,
+    .solveButton,
+    .applyButton,
+    .saveButton,
+    .cancelButton,
+    .resetButton
+  ):disabled:hover {
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
+}
+:is(.cropButton, .actionButton, .copyButton, .downloadButton):disabled:hover {
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .hero p {
+    font-size: 1.1rem;
+  }
+
+  .uploadSection,
+  .resultSection,
+  .solutionSection {
+    padding: 1.5rem;
+  }
+
+  .imageActionsBelow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .imageControls,
+  .cropControls {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .imageActionButton,
+  .processButton,
+  .cropButton,
+  .resetButton,
+  .applyButton,
+  .cancelButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .solveButton,
+  .downloadButton {
+    width: 100%;
+  }
+
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .codeActions {
+    position: static;
+    margin-top: 0.75rem;
+    justify-content: flex-start;
+  }
+
+  /* Adjust copy buttons for mobile */
+  .normalView .copyButton,
+  .solutionContent .copyButton {
+    position: static;
+    display: block;
+    width: fit-content;
+    margin-top: 0.75rem;
+    margin-left: auto;
+    margin-right: 0; /* Align right */
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 0.5rem;
+  }
+  .hero {
+    padding: 1.5rem 1rem;
+  }
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+  .hero p {
+    font-size: 1rem;
+  }
+
+  .uploadSection,
+  .resultSection,
+  .solutionSection {
+    padding: 1rem;
+  }
+  .uploadSection h2,
+  .resultSection h2,
+  .solutionSection h2,
+  .features h2 {
+    font-size: 1.5rem;
+  }
+
+  .dropZone {
+    min-height: 200px;
+  }
+  .uploadPrompt h3 {
+    font-size: 1.25rem;
+  }
+
+  .mathDisplay {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+  .mathLiveField {
+    font-size: 1.1rem;
+  }
+
+  .imageActionButton,
+  .processButton,
+  .solveButton,
+  .downloadButton {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+  .actionButton,
+  .copyButton,
+  .viewToggle button {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
 }

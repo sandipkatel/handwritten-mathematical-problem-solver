@@ -22,6 +22,8 @@ import styles from "@/app/page.module.css";
 import nerdamer from "nerdamer";
 import "nerdamer/all";
 import Script from "next/script";
+import ReactCrop, { Crop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 // MathLive needs to be imported this way to prevent SSR issues
 const MathQuillEditor = dynamic(() => import("../components/MathQuillEditor"), {
@@ -42,6 +44,17 @@ export default function HandwritingConverter() {
   const [isEditing, setIsEditing] = useState(false);
   const [isRenderedEditing, setIsRenderedEditing] = useState(false);
   const mathEditorRef = useRef<any>(null);
+  const [crop, setCrop] = useState<Crop>({
+    unit: "%",
+    width: 100,
+    height: 100,
+    x: 0,
+    y: 0,
+  });
+  const [isCropping, setIsCropping] = useState(false);
+  const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imageReady, setImageReady] = useState<boolean>(false);
 
   // Handle file selection
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +62,15 @@ export default function HandwritingConverter() {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
-      await processImage(selectedFile);
+      setImageReady(true); // Set image ready flag
+      setRecognizedLatex("");
+      setEditedLatex("");
+      setIsSolved(false);
+      setSolution(null);
+      setError(null); // Clear previous errors
+      setIsCropping(false); // Ensure not in cropping mode
+      setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 }); // Reset crop
+      setCompletedCrop(null);
     }
   };
 
@@ -60,12 +81,132 @@ export default function HandwritingConverter() {
       const droppedFile = e.dataTransfer.files[0];
       setFile(droppedFile);
       setPreviewUrl(URL.createObjectURL(droppedFile));
-      await processImage(droppedFile);
+      setImageReady(true); // Set image ready flag
+      setRecognizedLatex("");
+      setEditedLatex("");
+      setIsSolved(false);
+      setSolution(null);
+      setError(null); // Clear previous errors
+      setIsCropping(false); // Ensure not in cropping mode
+      setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 }); // Reset crop
+      setCompletedCrop(null);
     }
   };
 
+  const handleProcessClick = () => {
+    if (file) {
+      processImage(file);
+    }
+  };
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+  };
+  const handleCropComplete = (crop: Crop) => {
+    setCompletedCrop(crop);
+  };
+
+  // Add this function to apply the crop
+  const applyCrop = () => {
+    if (
+      imgRef.current &&
+      completedCrop &&
+      completedCrop.width &&
+      completedCrop.height
+    ) {
+      const canvas = document.createElement("canvas");
+      const image = imgRef.current;
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+
+      // Calculate crop dimensions in pixels
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
+
+      // Ensure crop dimensions are positive
+      if (cropWidth <= 0 || cropHeight <= 0) {
+        console.error("Invalid crop dimensions");
+        setError("Invalid crop dimensions. Please try cropping again.");
+        setIsCropping(false); // Exit cropping mode on error
+        return;
+      }
+
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
+
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        ctx.drawImage(
+          image,
+          cropX,
+          cropY,
+          cropWidth,
+          cropHeight,
+          0,
+          0,
+          cropWidth,
+          cropHeight
+        );
+
+        // Convert the canvas to a blob and create a new File object
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const croppedFile = new File(
+              [blob],
+              file?.name || "cropped-image.png",
+              {
+                type: "image/png", // Use PNG for potentially better quality after crop
+              }
+            );
+
+            // Update state with the cropped image
+            setFile(croppedFile);
+            // Revoke previous URL to prevent memory leaks
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(URL.createObjectURL(croppedFile));
+            setIsCropping(false);
+            setImageReady(true); // Cropped image is ready
+            // Reset OCR results as the image has changed
+            setRecognizedLatex("");
+            setEditedLatex("");
+            setIsSolved(false);
+            setSolution(null);
+          } else {
+            setError("Failed to create cropped image blob.");
+            setIsCropping(false); // Exit cropping mode on error
+          }
+        }, "image/png");
+      } else {
+        setError("Failed to get canvas context for cropping.");
+        setIsCropping(false); // Exit cropping mode on error
+      }
+    } else {
+      setError("Crop details or image reference missing.");
+      setIsCropping(false); // Exit cropping mode on error
+    }
+  };
+
+  // Add this function to cancel cropping
+  const cancelCropping = () => {
+    setIsCropping(false);
+    setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 }); // Optionally reset crop state
+    setCompletedCrop(null);
+  };
+
+  // Add this function to start cropping
+  const startCropping = () => {
+    if (!previewUrl) return; // Don't allow cropping if no image
+    setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 }); // Reset crop on start
+    setCompletedCrop(null);
+    setIsCropping(true);
+    setImageReady(false); // Image is not ready for processing while cropping
+    // Clear previous OCR results when starting a new crop
+    setRecognizedLatex("");
+    setEditedLatex("");
+    setIsSolved(false);
+    setSolution(null);
   };
 
   // Process the image with the OCR model
@@ -92,12 +233,12 @@ export default function HandwritingConverter() {
       const data = await response.json();
       setRecognizedLatex(data.latex);
       setEditedLatex(data.latex);
-      setIsProcessing(false);
     } catch (err) {
       console.error("Error processing image:", err);
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
       );
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -130,13 +271,16 @@ export default function HandwritingConverter() {
     } catch (error) {
       console.error("Error solving expression:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
-      setIsSolved(false);
+      setIsSolved(false); // Ensure isSolved is false on error
     }
   };
 
   // Handle reset to clear all states
   const handleReset = () => {
     setFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl); // Clean up object URL
+    }
     setPreviewUrl(null);
     setRecognizedLatex("");
     setEditedLatex("");
@@ -146,6 +290,10 @@ export default function HandwritingConverter() {
     setCopiedText(null);
     setIsEditing(false);
     setIsRenderedEditing(false);
+    setImageReady(false);
+    setIsCropping(false);
+    setCrop({ unit: "%", width: 100, height: 100, x: 0, y: 0 });
+    setCompletedCrop(null);
   };
 
   // Copy text to clipboard
@@ -158,11 +306,38 @@ export default function HandwritingConverter() {
   // Convert LaTeX to more readable normal text (simplified version)
   const latexToNormalText = (latex: string): string => {
     try {
-      const expression = nerdamer.convertFromLaTeX(latex);
-      return expression.toString();
+      // Basic replacements for common math symbols, adjust as needed
+      let normal = latex
+        .replace(/\\frac{(.*?)}{(.*?)}/g, "($1)/($2)")
+        .replace(/\\sqrt{(.*?)}/g, "sqrt($1)")
+        .replace(/\\times/g, "*")
+        .replace(/\\div/g, "/")
+        .replace(/\\pm/g, "±")
+        .replace(/\\mp/g, "∓")
+        .replace(/\^\{(.*?)\}/g, "^($1)") // Handle exponents like x^{2+y}
+        .replace(/\^{(.)}/g, "^$1") // Handle single char exponents x^2
+        .replace(/\\sin/g, "sin")
+        .replace(/\\cos/g, "cos")
+        .replace(/\\tan/g, "tan")
+        .replace(/\\log/g, "log")
+        .replace(/\\ln/g, "ln")
+        .replace(/\\pi/g, "π")
+        .replace(/\\alpha/g, "α")
+        .replace(/\\beta/g, "β")
+        .replace(/\\gamma/g, "γ")
+        // Add more replacements as needed
+        .replace(/[{}]/g, ""); // Remove leftover braces
+      // Attempt simplification with nerdamer if possible, otherwise return basic replacements
+      try {
+        const expression = nerdamer.convertFromLaTeX(latex);
+        return expression.toString();
+      } catch (nerdError) {
+        console.warn("Nerdamer failed, using basic conversion:", nerdError);
+        return normal; // Fallback to basic string replacements
+      }
     } catch (error) {
       console.error("Error converting LaTeX:", error);
-      return "Invalid expression";
+      return "Conversion Error"; // Return the original LaTeX if conversion fails
     }
   };
 
@@ -173,7 +348,15 @@ export default function HandwritingConverter() {
 
   // Save the edited LaTeX
   const saveEdit = () => {
-    setRecognizedLatex(editedLatex);
+    // Update recognizedLatex only if editedLatex is different
+    // This prevents unnecessary re-renders if nothing changed
+    if (editedLatex !== recognizedLatex) {
+      setRecognizedLatex(editedLatex);
+      // Reset solved state if LaTeX changed
+      setIsSolved(false);
+      setSolution(null);
+      setError(null); // Clear solve errors
+    }
     setIsEditing(false);
   };
 
@@ -189,9 +372,26 @@ export default function HandwritingConverter() {
 
   // Save the rendered math edit
   const saveRenderedEdit = () => {
-    setRecognizedLatex(editedLatex);
+    if (editedLatex !== recognizedLatex) {
+      setRecognizedLatex(editedLatex);
+      // Reset solved state if LaTeX changed
+      setIsSolved(false);
+      setSolution(null);
+      setError(null); // Clear solve errors
+    }
     setIsRenderedEditing(false);
   };
+
+  // Effect to clean up Object URL when component unmounts or previewUrl changes
+  useEffect(() => {
+    // This is a cleanup function that runs when the component unmounts
+    // or before the effect runs again if previewUrl changes
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]); // Dependency array includes previewUrl
 
   return (
     <>
@@ -209,38 +409,131 @@ export default function HandwritingConverter() {
                 onDragOver={handleDragOver}
               >
                 {previewUrl ? (
-                  <div className={styles.previewContainer}>
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      width={400}
-                      height={300}
-                      className={styles.previewImage}
-                    />
-                    <button
-                      className={styles.resetButton}
-                      onClick={handleReset}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                        <path d="M3 3v5h5"></path>
-                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-                        <path d="M16 21h5v-5"></path>
-                      </svg>
-                      New Image
-                    </button>
-                  </div>
+                  <div className={styles.previewWrapper}>
+                    {" "}
+                    {/* NEW WRAPPER */}
+                    {/* --- Image/Crop Area --- */}
+                    <div className={styles.imageDisplayArea}>
+                      {isCropping ? (
+                        <ReactCrop
+                          crop={crop}
+                          onChange={(c, percentCrop) => setCrop(percentCrop)} // Use percentCrop for consistency
+                          onComplete={(c) => setCompletedCrop(c)}
+                          aspect={undefined} // Allow freeform crop
+                          minWidth={10} // Optional: Minimum crop size in pixels
+                          minHeight={10} // Optional: Minimum crop size in pixels
+                        >
+                          <img
+                            ref={imgRef}
+                            src={previewUrl}
+                            alt="Preview - Cropping"
+                            style={{
+                              display: "block",
+                              maxWidth: "100%",
+                              maxHeight: "400px",
+                            }} // Important for ReactCrop
+                            onLoad={(e) => {
+                              // You might want to reset crop % here if image dimensions change
+                              const { naturalWidth, naturalHeight } =
+                                e.currentTarget;
+                              if (
+                                crop.unit === "%" &&
+                                (crop.width > 100 || crop.height > 100)
+                              ) {
+                                setCrop({
+                                  unit: "%",
+                                  width: 100,
+                                  height: 100,
+                                  x: 0,
+                                  y: 0,
+                                });
+                              }
+                            }}
+                          />
+                        </ReactCrop>
+                      ) : (
+                        <Image
+                          src={previewUrl}
+                          alt="Preview"
+                          width={400} // Adjust as needed, or use layout="responsive"
+                          height={300} // Adjust as needed
+                          className={styles.previewImage}
+                          // Make sure Next/Image renders an underlying img tag for ref if needed
+                          // (It does by default, but good to be aware)
+                        />
+                      )}
+                    </div>
+                    {/* --- Action Buttons Area (Below Image/Crop) --- */}
+                    <div className={styles.imageActionsBelow}>
+                      {isCropping ? (
+                        <div className={styles.cropControls}>
+                          <button
+                            className={`${styles.cropButton} ${styles.applyButton}`} // Add specific class if needed
+                            onClick={applyCrop}
+                            disabled={
+                              !completedCrop ||
+                              completedCrop.width === 0 ||
+                              completedCrop.height === 0
+                            }
+                          >
+                            <Save size={16} />
+                            Apply Crop
+                          </button>
+                          <button
+                            className={styles.cancelButton}
+                            onClick={cancelCropping}
+                          >
+                            Cancel Crop
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className={styles.imageControls}>
+                            <button
+                              className={styles.cropButton}
+                              onClick={startCropping}
+                            >
+                              <Edit size={16} />
+                              Crop Image
+                            </button>
+                            <button
+                              className={styles.resetButton}
+                              onClick={handleReset}
+                            >
+                              <RefreshCw size={16} />
+                              New Image
+                            </button>
+                          </div>
+
+                          {imageReady &&
+                            !isCropping && ( // Show process only when ready and not cropping
+                              <button
+                                className={styles.processButton}
+                                onClick={handleProcessClick}
+                                disabled={isProcessing || !file} // Disable if processing or no file
+                              >
+                                {isProcessing ? (
+                                  <>
+                                    <RefreshCw
+                                      size={16}
+                                      className={styles.spinningIcon}
+                                    />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FileText size={16} />
+                                    Process Image
+                                  </>
+                                )}
+                              </button>
+                            )}
+                        </>
+                      )}
+                    </div>
+                  </div> // End previewWrapper
                 ) : (
+                  // Upload Prompt remains the same
                   <div className={styles.uploadPrompt}>
                     <div className={styles.uploadIcon}>
                       <svg
@@ -264,7 +557,7 @@ export default function HandwritingConverter() {
                     <label className={styles.uploadButton}>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*" // Add HEIC/HEIF if needed
                         onChange={handleFileChange}
                         className={styles.fileInput}
                       />
@@ -275,12 +568,14 @@ export default function HandwritingConverter() {
                 )}
               </div>
 
-              {isProcessing && (
-                <div className={styles.processingIndicator}>
-                  <div className={styles.spinner}></div>
-                  <p>Processing your image...</p>
-                </div>
-              )}
+              {/* Processing Indicator and Error Message outside dropzone, but inside uploadSection */}
+              {isProcessing &&
+                !previewUrl && ( // Show spinner only if no preview (initial processing)
+                  <div className={styles.processingIndicator}>
+                    <div className={styles.spinner}></div>
+                    <p>Processing your image...</p>
+                  </div>
+                )}
 
               {error && (
                 <div className={styles.errorMessage}>
@@ -289,10 +584,14 @@ export default function HandwritingConverter() {
               )}
             </section>
 
+            {/* Result Section remains largely the same */}
             {recognizedLatex && (
               <section className={styles.resultSection}>
+                {/* ... (rest of the result section: Recognized Expression, LaTeX/Normal view, Rendered View, Solve button) ... */}
+                {/* Make sure the structure inside remains logical */}
                 <div className={styles.recognizedHeader}>
                   <h2>Recognized Expression</h2>
+                  {/* Optional: Add view toggle buttons here if desired */}
                 </div>
 
                 <div className={styles.recognizedContent}>
@@ -305,11 +604,13 @@ export default function HandwritingConverter() {
                             value={editedLatex}
                             onChange={(e) => setEditedLatex(e.target.value)}
                             rows={4}
+                            aria-label="Edit LaTeX code"
                           />
                           <div className={styles.mathEditingControls}>
                             <button
                               className={styles.saveButton}
                               onClick={saveEdit}
+                              aria-label="Save LaTeX changes"
                             >
                               <Save size={16} />
                               Save
@@ -317,94 +618,63 @@ export default function HandwritingConverter() {
                             <button
                               className={styles.cancelButton}
                               onClick={() => {
-                                setEditedLatex(recognizedLatex);
+                                setEditedLatex(recognizedLatex); // Revert changes
                                 setIsEditing(false);
                               }}
+                              aria-label="Cancel LaTeX editing"
                             >
                               Cancel
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <>
-                          <div className={styles.codeDisplay}>
-                            <pre className={styles.codeBlock}>
-                              {recognizedLatex}
-                            </pre>
-                            <div className={styles.codeActions}>
-                              <button
-                                className={styles.actionButton}
-                                onClick={startEditing}
+                        <div className={styles.codeDisplay}>
+                          <pre className={styles.codeBlock}>
+                            {recognizedLatex}
+                          </pre>
+                          <div className={styles.codeActions}>
+                            <button
+                              className={styles.actionButton}
+                              onClick={startEditing}
+                              aria-label="Edit LaTeX code"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                                Edit
-                              </button>
-                              <button
-                                className={styles.actionButton}
-                                onClick={() =>
-                                  copyToClipboard(recognizedLatex, "latex")
-                                }
-                              >
-                                {copiedText === "latex" ? (
-                                  <>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                    Copied!
-                                  </>
-                                ) : (
-                                  <>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      <rect
-                                        x="9"
-                                        y="9"
-                                        width="13"
-                                        height="13"
-                                        rx="2"
-                                        ry="2"
-                                      ></rect>
-                                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    Copy LaTeX
-                                  </>
-                                )}
-                              </button>
-                            </div>
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
+                              Edit
+                            </button>
+                            <button
+                              className={styles.actionButton}
+                              onClick={() =>
+                                copyToClipboard(recognizedLatex, "latex")
+                              }
+                              aria-label="Copy LaTeX code"
+                            >
+                              {copiedText === "latex" ? (
+                                <>
+                                  {" "}
+                                  <Check size={16} /> Copied!{" "}
+                                </>
+                              ) : (
+                                <>
+                                  {" "}
+                                  <Copy size={16} /> Copy LaTeX{" "}
+                                </>
+                              )}
+                            </button>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -413,35 +683,44 @@ export default function HandwritingConverter() {
                         {latexToNormalText(recognizedLatex)}
                       </p>
                       <button
-                        className={styles.copyButton}
+                        className={styles.copyButton} // Reuse or create specific style
                         onClick={() =>
                           copyToClipboard(
                             latexToNormalText(recognizedLatex),
                             "normal"
                           )
                         }
+                        aria-label="Copy normal text representation"
                       >
                         {copiedText === "normal" ? (
-                          <Check size={16} />
+                          <>
+                            {" "}
+                            <Check size={16} /> Copied!{" "}
+                          </>
                         ) : (
-                          <Copy size={16} />
+                          <>
+                            {" "}
+                            <Copy size={16} /> Copy Text{" "}
+                          </>
                         )}
-                        {copiedText === "normal" ? "Copied!" : "Copy Text"}
                       </button>
                     </div>
                   )}
 
+                  {/* Rendered Math View & Editor */}
                   <div className={styles.renderedContainer}>
                     {isRenderedEditing ? (
                       <div className={styles.mathEditorContainer}>
                         <MathQuillEditor
                           value={editedLatex}
                           onChange={handleMathEditorChange}
+                          // ref={mathEditorRef} // Assign ref if needed by MathQuillEditor
                         />
                         <div className={styles.mathEditingControls}>
                           <button
                             className={styles.saveButton}
                             onClick={saveRenderedEdit}
+                            aria-label="Save changes from math editor"
                           >
                             <Save size={16} />
                             Save
@@ -449,9 +728,10 @@ export default function HandwritingConverter() {
                           <button
                             className={styles.cancelButton}
                             onClick={() => {
-                              setEditedLatex(recognizedLatex);
+                              setEditedLatex(recognizedLatex); // Revert
                               setIsRenderedEditing(false);
                             }}
+                            aria-label="Cancel math editing"
                           >
                             Cancel
                           </button>
@@ -474,13 +754,20 @@ export default function HandwritingConverter() {
                     )}
                   </div>
 
+                  {/* Solve Button */}
                   <div className={styles.actionButtons}>
                     <button
                       className={styles.solveButton}
                       onClick={solveExpression}
-                      disabled={!recognizedLatex || isProcessing}
+                      disabled={
+                        !editedLatex ||
+                        isProcessing ||
+                        isEditing ||
+                        isRenderedEditing
+                      } // Also disable if editing
+                      aria-label="Solve the mathematical expression"
                     >
-                      <svg
+                      <svg /* Calculator or equals icon might be better */
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -491,8 +778,18 @@ export default function HandwritingConverter() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                        <rect
+                          x="4"
+                          y="2"
+                          width="16"
+                          height="20"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="16" y1="14" x2="8" y2="14"></line>
+                        <line x1="16" y1="18" x2="8" y2="18"></line>
+                        <line x1="10" y1="10" x2="14" y2="10"></line>
                       </svg>
                       Solve Expression
                     </button>
@@ -501,11 +798,31 @@ export default function HandwritingConverter() {
               </section>
             )}
 
+            {/* Solution Section remains the same */}
             {isSolved && solution && !error && (
               <section className={styles.solutionSection}>
                 <h2>Solution</h2>
                 <div className={styles.solutionContent}>
+                  {/* Consider adding copy for solution */}
                   <MathJax dynamic>{`$$${solution}$$`}</MathJax>
+                  <button
+                    className={styles.copyButton} // Reuse or create specific style
+                    onClick={() => copyToClipboard(solution, "solution")}
+                    style={{ position: "absolute", top: "1rem", right: "1rem" }} // Adjust position
+                    aria-label="Copy solution LaTeX"
+                  >
+                    {copiedText === "solution" ? (
+                      <>
+                        {" "}
+                        <Check size={16} /> Copied!{" "}
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        <Copy size={16} /> Copy Solution{" "}
+                      </>
+                    )}
+                  </button>
                 </div>
               </section>
             )}

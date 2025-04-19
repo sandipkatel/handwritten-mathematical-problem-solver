@@ -16,7 +16,7 @@ def convert_image_to_latex(image_path):
 
     current_dir = os.path.dirname(__file__)
     model_dir = os.path.join(
-        current_dir, '../../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
+        current_dir, '../../../../model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
 
     # Load the processor and model
     processor = TrOCRProcessor.from_pretrained(
