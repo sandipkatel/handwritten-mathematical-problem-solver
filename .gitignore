@@ -57,3 +57,5 @@ venv
 
 # Cache files
 **/__pycache__/*
+
+db.sqlite3

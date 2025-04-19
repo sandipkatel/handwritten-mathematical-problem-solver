@@ -9,9 +9,9 @@ import json
 
 
 def convert_image_to_latex(image_path):
-    # """
-    # Convert image to LaTeX using your trained model
-    # """
+    """
+    Convert image to LaTeX using your trained model
+    """
 
     # current_dir = os.path.dirname(__file__)
     # model_dir = os.path.join(
