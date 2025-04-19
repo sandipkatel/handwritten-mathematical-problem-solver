@@ -1,7 +1,6 @@
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
-from IPython.display import Math, display
 from sympy.parsing.latex import parse_latex
 import os
 
@@ -379,8 +378,8 @@ def solve_system_of_equations(equations, variables=None):
     # Display the system
     # print("System of equations:")
     for i, eq in enumerate(eq_list):
-        display(Math(sp.latex(eq)))
-
+        print(sp.latex(eq))
+    
     # If variables not provided, extract from equations
     if variables is None:
         all_symbols = set()

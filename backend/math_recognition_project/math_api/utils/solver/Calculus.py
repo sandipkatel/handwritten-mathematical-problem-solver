@@ -1,3 +1,5 @@
+from sympy import sympify, pi, E
+import math
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +13,28 @@ image_dir = os.path.abspath(os.path.join(
 os.makedirs(image_dir, exist_ok=True)
 
 plot_path = os.path.join(image_dir, 'result.png')
+
+
+# Convert bounds to float for plotting
+
+def convert_bound_to_float(bound):
+    if isinstance(bound, (int, float, sp.Number)):
+        return float(bound)
+
+    if isinstance(bound, (sp.Symbol, sp.Expr)):
+        replacements = {}
+
+        symbols = list(bound.free_symbols)
+        for symbol in symbols:
+            if symbol.name == 'pi':
+                replacements[symbol] = sp.pi
+            elif symbol.name == 'e':
+                replacements[symbol] = sp.E
+
+        if replacements:
+            bound = bound.subs(replacements)
+
+    return float(bound.evalf())
 
 
 def solve_calculus(expr_latex):
@@ -231,7 +255,7 @@ def handle_integration(expr):
         print(f"Definite integral from {lower_bound} to {upper_bound}:")
         print(f"∫({integrand}) d{integration_var} = {integral_result}")
         # print("\nOriginal expression:", integrand)
-        display(Math(sp.latex(integrand)))
+        # display(Math(sp.latex(integrand)))
         print(f"Indefinite integral: {indefinite_integral}")
         display(Math(sp.latex(indefinite_integral)))
         print(
@@ -253,8 +277,7 @@ def handle_integration(expr):
             "lower_bound": sp.latex(lower_bound),
             "upper_bound": sp.latex(upper_bound),
             "indefinite_integral": sp.latex(indefinite_integral),
-            "solution": sp.latex(integral_result),
-            "result": result_print
+            "solution": sp.latex(integral_result)
         }
 
     else:
@@ -277,8 +300,7 @@ def handle_integration(expr):
             "original": sp.latex(expr),
             "type": "indefinite_integral",
             "variable": sp.latex(integration_var),
-            "solution": sp.latex(indefinite_integral),
-            "final_result": result_print
+            "solution": sp.latex(indefinite_integral)
         }
     return result
 
@@ -327,19 +349,22 @@ def handle_differentiation(expr):
             has_second_derivative = False
 
         for point in critical_points:
-            point_analysis = {"point": sp.latex(sp.sympify(point))} # Start analysis entry
+            point_analysis = {"point": sp.latex(
+                sp.sympify(point))}  # Start analysis entry
             try:
                 # Use diff_var for substitution
                 point_expr = sp.sympify(point)
-                point_analysis["value"] = sp.latex(function.subs(diff_var, point_expr))
+                point_analysis["value"] = sp.latex(
+                    function.subs(diff_var, point_expr))
 
                 if has_second_derivative:
                     # Use diff_var for substitution
-                    second_val_expr = second_derivative.subs(diff_var, point_expr)
+                    second_val_expr = second_derivative.subs(
+                        diff_var, point_expr)
                     # Check if the result is numerical before converting to float
                     if second_val_expr.is_Number:
                         second_val = float(second_val_expr)
-                        if second_val > 1e-9: # Add tolerance for float comparison
+                        if second_val > 1e-9:  # Add tolerance for float comparison
                             kind = "Minimum"
                         elif second_val < -1e-9:
                             kind = "Maximum"
@@ -356,10 +381,10 @@ def handle_differentiation(expr):
             except Exception as e_inner:
                 print(f"Could not analyze critical point {point}: {e_inner}")
                 point_analysis["type"] = "Analysis Failed"
-                if "value" not in point_analysis: point_analysis["value"] = "N/A"
+                if "value" not in point_analysis:
+                    point_analysis["value"] = "N/A"
 
             critical_analysis.append(point_analysis)
-
 
         result = {
             "original": sp.latex(expr),
@@ -368,7 +393,7 @@ def handle_differentiation(expr):
             "order": order,
             "solution": sp.latex(derivative_result),
             "final_result": result_print,
-            "critical_points_analysis": critical_analysis # Use the populated list
+            "critical_points_analysis": critical_analysis  # Use the populated list
         }
 
         return result
@@ -402,7 +427,7 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
             ys_fx = fx(xs)
             ys_fx_int = fx_int(xs)
         except Exception as e:
-            # print(f"Error calculating function values: {e}")
+            print(f"Error calculating function values: {e}")
             return {
                 "error": str(e),
                 "original": sp.latex(function)
@@ -428,10 +453,10 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
         plt.grid(True, alpha=0.3)
 
         # Add formula in a text box
-        plt.figtext(0.5, 0.01,
-                    f"$\\int {sp.latex(function)} \\, d{var} = {sp.latex(integral)} + C$",
-                    ha="center", fontsize=12,
-                    bbox={"facecolor": "white", "alpha": 0.5, "pad": 5})
+        # plt.figtext(0.5, 0.01,
+        #            f"$\\int {sp.latex(function)} \\, d{var} = {sp.latex(integral)} + C$",
+        #            ha="center", fontsize=12,
+        #            bbox={"facecolor":"white", "alpha":0.5, "pad":5})
 
         # Save and show plot
         plt.savefig(plot_path, dpi=300, bbox_inches='tight')
@@ -448,9 +473,9 @@ def plot_indefinite_integral(function, integral, var, x_range=(-5, 5), num_point
 def plot_definite_integral(function, indefinite, var, lower_bound, upper_bound, result):
     """Plot a function and visualize its definite integral"""
     try:
-        # Convert bounds to float for plotting
-        l_bound = float(lower_bound)
-        u_bound = float(upper_bound)
+        # Convert bounds to numerical values
+        l_bound = convert_bound_to_float(lower_bound)
+        u_bound = convert_bound_to_float(upper_bound)
         padding = (u_bound - l_bound) * 0.2
         x_min = l_bound - padding
         x_max = u_bound + padding
@@ -560,12 +585,12 @@ def plot_derivative(function, derivative, var, order=1, x_range=(-5, 5), num_poi
         # Find critical points
         critical_points = []
         try:
-            critical_points_values = sp.solve(derivative, var)
-            for point in critical_points_values:
+            critical_points_ = sp.solve(derivative, var)
+            for point in critical_points:
                 try:
                     p_float = float(point)
                     if x_range[0] <= p_float <= x_range[1]:
-                        critical_points.append(p_float)
+                        # critical_points.append(p_float)
                         # Mark the critical point
                         plt.scatter([p_float], [fx(p_float)],
                                     color='red', zorder=5, s=50)

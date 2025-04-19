@@ -12,7 +12,6 @@ def convert_image_to_latex(image_path):
     """
     Convert image to LaTeX using your trained model
     """
-    # Uncomment this section when you're ready to use your actual model
 
     # current_dir = os.path.dirname(__file__)
     # model_dir = os.path.join(
@@ -32,14 +31,12 @@ def convert_image_to_latex(image_path):
     # img = ImageEnhance.Sharpness(img).enhance(2.0)
     # pixel_values = processor(img, return_tensors="pt").pixel_values.to(device)
 
-    # # Generate LaTeX text
+    # Generate LaTeX text
     # generated_ids = model.generate(pixel_values)
     # generated_text = processor.batch_decode(
     #     generated_ids, skip_special_tokens=True)[0]
 
-    # For testing only - replace with your actual model inference
-    generated_text = '5x^3 + 4 = 0'
-    print(generated_text)
+    generated_text = ' \\frac {d } { d x } ( \\sin ^ { 3 } x )'
     return {"latex": generated_text}
 
 
