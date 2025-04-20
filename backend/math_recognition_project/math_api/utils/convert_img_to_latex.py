@@ -9,13 +9,13 @@ import json
 
 
 def convert_image_to_latex(image_path):
-    """
-    Convert image to LaTeX using your trained model
-    """
+    # """
+    # Convert image to LaTeX using your trained model
+    # """
 
     current_dir = os.path.dirname(__file__)
     model_dir = os.path.join(
-        current_dir, 'model\checkpoint_eval_2014_small_stage1_new_image\checkpoint-19000')
+        current_dir, 'model/checkpoint_eval_2014_small_stage1_new_image/checkpoint-19000')
 
     # Load the processor and model
     processor = TrOCRProcessor.from_pretrained(
@@ -35,7 +35,7 @@ def convert_image_to_latex(image_path):
     generated_ids = model.generate(pixel_values)
     generated_text = processor.batch_decode(
         generated_ids, skip_special_tokens=True)[0]
-    
+
     # generated_text = ' \\frac {d } { d x } ( \\sin ^ { 3 } x )'
     return {"latex": generated_text}
 

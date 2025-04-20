@@ -48,18 +48,21 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## _Server_
 
-### Getting Started on Server
+### Getting Started on Backend
 The server-side uses Flask API and requires following to be initialized
 - Create virtual environment
-    ```python -m venv venv```
+    ```python -m venv .venv```
 - Run virtual environment
-    ```venv\Scripts\Activate.ps1```
-- Install Flask
-    ```pip install Flask```
+    ```.venv\Scripts\Activate```
 - Exit from virtual environment
     ```deactivate```
+- Install dependencies
+    ```pip install -r requirements.txt```
+- Navigate to backend/math_recognition_project
 - Run the server
-    ```python server.py```
+    ```python manage.py runserver 8080```
+- Later run
+    ```python manage.py migrate```
 
 
 ### Note: If LF to URLF conversion warning occurs

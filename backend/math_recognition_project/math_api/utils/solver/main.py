@@ -1,64 +1,66 @@
 import sympy as sp
 import sys
+import os
 from sympy.parsing.latex import parse_latex
-from Algebra import solve_algebra, is_system_of_linear_equations, solve_system_of_equations
-from Matrix import solve_matrix
-from Calculus import solve_calculus
-from Arithmatic import solve_arithmetic_simplification
+from .Algebra import solve_algebra, is_system_of_linear_equations, solve_system_of_equations
+from .Matrix import solve_matrix
+from .Calculus import solve_calculus
+from .Arithmatic import solve_arithmetic_simplification
+from django.conf import settings
 # from SolveCommon import solve_common_math_problem
 
+
 def solve(latex_input):
-    
-    """
-    Comprehensive main function to solve Matrix, System of Linear equations, Polynomials, calculus and simplification.
-    
-    Args:
-        latex_input: A string containing LaTeX expression, or a SymPy expression
-    
-    Returns:
-        The result of the solution or exception
-    """
     try:
         try:
             expr = parse_latex(latex_input)
         except Exception as e:
-            print("Error parsing LaTeX expression:", str(e))
-            return {
-            "Error parsing LaTeX expression:": str(e)
-            }
+            return {"error": f"Error parsing LaTeX expression: {str(e)}"}
 
-        # Handle Matrices
+        # Define the correct path for the plot file
+        plot_dir = os.path.join(settings.BASE_DIR, 'math_api', 'image')
+        plot_file = os.path.join(plot_dir, 'result.png')
+
+        # Make sure the directory exists
+        os.makedirs(plot_dir, exist_ok=True)
+
+        # Clear any existing plot file before solving
+        if os.path.exists(plot_file):
+            try:
+                os.remove(plot_file)
+            except OSError:
+                pass
+
+        # Matrix
         if r"\begin{bmatrix}" in latex_input:
-            return solve_matrix(latex_input)
-        # Handle System of Linear Equations
+            result = solve_matrix(latex_input)
+        # System of Linear Equations
         elif is_system_of_linear_equations(latex_input):
-            print("System of Linear Equations Detected")
-            print(latex_input)
-            return solve_system_of_equations(latex_input)
-        # Handle Calculus
+            try:
+                equations = [parse_latex(eq.strip()) for eq in latex_input.split(",")]
+            except:
+                equations = [sp.sympify(eq.strip()) for eq in latex_input.split(",")]
+            result = solve_system_of_equations(equations)
+
+        # Calculus (Derivative or Integral)
         elif isinstance(expr, sp.Derivative) or isinstance(expr, sp.Integral):
-            return solve_calculus(latex_input)
-        # Handle Polynomials
+            result = solve_calculus(latex_input)
+        # Algebra
         elif isinstance(expr, sp.Equality) or expr.has(sp.Symbol):
-            return solve_algebra(latex_input)
-        # Handle Arithmatic Simplification
+            result = solve_algebra(latex_input)
+        # Arithmetic
         else:
-            return solve_arithmetic_simplification(expr)
+            result = solve_arithmetic_simplification(expr)
+
+        # Check if a new graph was generated during this solving process
+        if os.path.exists(plot_file):
+            result["plot_url"] = "get_plot/"
+        print("Result:",result)
+        return result
+
     except Exception as e:
-        print("An unexpected error occurred:", str(e))
-        return {
-            "An unexpected error occurred:": str(e)
-        }
+        return {"error": f"Unexpected error occurred: {str(e)}"}
 
-
-# if __name__ == "__main__":
-#     print("Enter a mathematical problem in LaTeX format.")
-#     print("Examples:")
-#     print("- Equation: $x^2 - 4 = 0$")
-#     print("- Derivative: $\\frac{d}{dx}x^3$")
-#     print("- Integral: $\\int x^2 \\, dx$")
-#     latex_input = input("LaTeX Input: ")
-#     print(main(latex_input))
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

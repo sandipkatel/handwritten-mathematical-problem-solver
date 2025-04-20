@@ -1,9 +1,0 @@
-- Backend
-Install dependencies using "pip install -r requirements.txt"
-navigate to backend/math_recognition_project
-run "python manage.py runserver 8080"
-
-- Frontend
-Install dependencies using "npm install"
-navigate to client
-run "npm run dev"

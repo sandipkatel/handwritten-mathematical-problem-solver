@@ -2,6 +2,7 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 .hero {
@@ -114,6 +115,33 @@
   display: none;
 }
 
+.previewWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 0 0 0;
+}
+
+.imageDisplayArea {
+  max-width: 100%;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageDisplayArea img {
+  display: block;
+  max-width: 100%;
+  max-height: 450px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
 .previewContainer {
   width: 100%;
   position: relative;
@@ -129,29 +157,106 @@
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.imageActionsBelow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0 1rem 1rem 1rem;
+}
 
-.resetButton {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+.imageControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.cropControls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Base Style for secondary/action buttons */
+.imageActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   background-color: white;
   color: var(--foreground);
-  border: none;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
+  padding: 0.6rem 1.2rem;
   font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  white-space: nowrap;
+}
+.imageActionButton:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* Button to INITIATE cropping */
+.cropButton {
+  composes: imageActionButton; /* OK: Single class composition */
+}
+
+/* Button to APPLY crop */
+.applyButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--success, #10b981);
+  border-color: var(--success, #10b981);
+  color: white;
+}
+.applyButton:hover {
+  background-color: var(--success-dark, #059669);
+  border-color: var(--success-dark, #059669);
+}
+
+/* Button to CANCEL cropping */
+.cancelButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--error, #ef4444);
+  border-color: var(--error, #ef4444);
+  color: white;
+}
+.cancelButton:hover {
+  background-color: var(--error-dark, #dc2626);
+  border-color: var(--error-dark, #dc2626);
+}
+
+.resetButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  position: static; /* Ensure it's not absolute here */
+  background-color: #6b7280;
+  border-color: #6b7280;
+  color: white;
 }
 
 .resetButton:hover {
   background-color: #f3f4f6;
   color: var(--primary);
+}
+
+.processButton {
+  composes: imageActionButton; /* OK: Single class composition */
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  /* padding: 0.75rem 1.5rem; */
+  font-size: 1rem;
+}
+.processButton:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
 }
 
 .processingIndicator {
@@ -638,7 +743,8 @@
   justify-content: flex-end;
 }
 
-.saveButton, .cancelButton {
+.saveButton,
+.cancelButton {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -667,4 +773,40 @@
 
 .cancelButton:hover {
   background-color: #f7fafc;
+}
+
+.plotContainer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.plotImage {
+  margin-top: 1rem;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* In page.module.css */
+
+.criticalPointsSection {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0; /* Adjust color as needed */
+}
+
+.criticalPointsSection h4 {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333; /* Adjust color */
+}
+
+.criticalPointsSection ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.criticalPointsSection li {
+  margin-bottom: 8px;
+  font-size: 0.95em;
 }
