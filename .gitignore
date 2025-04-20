@@ -63,3 +63,4 @@ venv
 *.jpg
 **/*.png
 **/*.jpg
+db.sqlite3

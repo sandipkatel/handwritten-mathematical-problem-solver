@@ -93,70 +93,149 @@ def solve_algebra(expr_latex, solve_for=None):
 
 
 def handle_equation(equation, solve_for=None):
-    """Process and visualize an equation"""
+    """Process and visualize an equation, handling up to two variables with standardized axes"""
     left_side = equation.lhs
     right_side = equation.rhs
 
     # Move all terms to left side
     expr = left_side - right_side
 
-    # If solve_for is not provided, try to identify the variable
-    if solve_for is None:
-        all_symbols = list(expr.free_symbols)
-        if len(all_symbols) == 0:
-            print("No variables found in the equation.")
-            return {"error": "No variables found in the expression"}
-        if len(all_symbols) > 1:
-            print(
-                f"Multiple variables found: {all_symbols}. Please specify which to solve for.")
-            return {"error": f"Multiple variables found: {all_symbols}. Please specify which to solve for."}
+    # Get all symbols in the expression
+    all_symbols = list(expr.free_symbols)
+    
+    # Case 1: No variables
+    if len(all_symbols) == 0:
+        return {"error": "No variables found in the expression"}
+    
+    # Case 2: Single variable - standard approach
+    elif len(all_symbols) == 1:
         solve_for = all_symbols[0]
-
-    # Check if it's a linear equation or polynomial
-    degree_sympy = get_polynomial_degree(expr, solve_for)
-    degree = None
-    if degree_sympy is not None:
+        degree_sympy = get_polynomial_degree(expr, solve_for)
+        degree = None
+        if degree_sympy is not None:
+            try:
+                degree = int(degree_sympy)
+            except TypeError:
+                print(f"Warning: Could not convert degree '{degree_sympy}' to standard Python int.")
+        
+        solution = sp.solve(equation, solve_for)
+        plot_polynomial(expr, solve_for, solution)
+        
+        eq_type = "linear_equation" if degree == 1 else "polynomial_equation" if degree is not None and degree > 1 else "equation"
+    
+    # Case 3: Two variables - prioritize x and y if present
+    elif len(all_symbols) == 2:
+        # Check if x and y are our variables
+        x_var = None
+        y_var = None
+        
+        # Look for standard variable names x and y
+        for sym in all_symbols:
+            if str(sym) == 'x':
+                x_var = sym
+            elif str(sym) == 'y':
+                y_var = sym
+        
+        # If x or y wasn't found, use what we have
+        if x_var is None:
+            x_var = [s for s in all_symbols if str(s) != 'y'][0]
+        if y_var is None:
+            y_var = [s for s in all_symbols if s != x_var][0]
+        
+        # If solve_for was specified, check if it's valid
+        if solve_for is not None and solve_for not in all_symbols:
+            return {"error": f"Specified variable {solve_for} not found in equation"}
+        
+        # If no variable specified to solve for, solve for y in terms of x
+        if solve_for is None:
+            solve_for = y_var
+        
+        solution = sp.solve(equation, solve_for)
+        
+        # Always plot with x_var on x-axis and y_var on y-axis
+        plot_two_variable_equation(equation, x_var, y_var, solution)
+        
+        degree = get_polynomial_degree(expr, solve_for)
         try:
-            # Explicitly convert SymPy number to Python int
-            degree = int(degree_sympy)
-        except TypeError:
-            # Handle cases where degree might be symbolic or non-numeric if needed
-            print(
-                f"Warning: Could not convert degree '{degree_sympy}' to standard Python int.")
-    # Display original equation
-    # print("Original equation:")
-    # display(Math(sp.latex(left_side) + " = " + sp.latex(right_side)))
-
-    # Solve the equation
-    solution = sp.solve(equation, solve_for)
-
-    # Display results
-    # print(f"Solving for {solve_for}:")
-    if len(solution) == 0:
-        print("No solution found.")
+            degree = int(degree) if degree is not None else None
+        except:
+            pass
+        
+        eq_type = "linear_equation" if degree == 1 else "polynomial_equation" if degree is not None and degree > 1 else "equation"
+    
+    # Case 4: More than two variables
     else:
-        print(f"Found {len(solution)} solution(s):")
-
-# Replace I with I for sympy compatibility
-
-        for i, sol in enumerate(solution):
-            print(f"  Solution {i+1}: {solve_for} = {sol}")
-            # display(Math(sp.latex(solve_for) + " = " + sp.latex(sol)))
-
-    # Visualize the equation
-    plot_polynomial(expr, solve_for, solution)
-
-    eq_type = "linear_equation" if degree == 1 else "polynomial_equation" if degree is not None and degree > 1 else "equation"
+        if solve_for is None:
+            # Check if y is present to solve for
+            y_var = next((s for s in all_symbols if str(s) == 'y'), None)
+            if y_var:
+                solve_for = y_var
+            else:
+                return {"error": f"Multiple variables found: {all_symbols}."}
+        elif solve_for not in all_symbols:
+            return {"error": f"Specified variable {solve_for} not found in equation"}
+        
+        solution = sp.solve(equation, solve_for)
+        # No plotting for 3+ variables
+        
+        degree = get_polynomial_degree(expr, solve_for)
+        try:
+            degree = int(degree) if degree is not None else None
+        except:
+            pass
+        
+        eq_type = "equation"  # Generic type for multi-variable equations
 
     return {
         "original": sp.latex(left_side) + " = " + sp.latex(right_side),
         "variable": sp.latex(solve_for),
         "degree": degree,
         "solution": [sp.latex(sol) for sol in solution],
-        "type": eq_type,  # Add this line
+        "type": eq_type,
     }
 
-
+def plot_two_variable_equation(equation, x_var, y_var, solution):
+    """Plot an equation with two variables, treating one as independent and one as dependent"""
+    plt.figure(figsize=(10, 6))
+    
+    # Define range for x values
+    x_min, x_max = -10, 10
+    xs = np.linspace(x_min, x_max, 1000)
+    
+    # For each solution (different ways to express y in terms of x)
+    for i, sol in enumerate(solution):
+        try:
+            # Create a function for plotting
+            f = sp.lambdify(x_var, sol, 'numpy')
+            
+            # Evaluate function
+            ys = f(xs)
+            
+            # Filter out any NaN or infinite values
+            valid_indices = np.isfinite(ys)
+            
+            # Plot the line/curve
+            plt.plot(xs[valid_indices], ys[valid_indices], 
+                    linewidth=2, 
+                    label=f"${sp.latex(y_var)} = {sp.latex(sol)}$")
+        except Exception as e:
+            print(f"Error plotting solution {i+1}: {e}")
+    
+    # Add labels and title
+    plt.xlabel(f"${x_var}$", fontsize=12)
+    plt.ylabel(f"${y_var}$", fontsize=12)
+    plt.title(f"Equation: ${sp.latex(equation)}$", fontsize=14)
+    plt.grid(True, alpha=0.3)
+    
+    # Add axes
+    plt.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+    plt.axvline(x=0, color='gray', linestyle='-', alpha=0.3)
+    
+    # Add legend
+    plt.legend(fontsize=10)
+    
+    # Save the plot
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
 def analyze_polynomial(expr, variable=None):
     """Analyze and visualize a polynomial expression"""
     # If variable is not provided, try to identify it
